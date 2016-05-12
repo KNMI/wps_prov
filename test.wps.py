@@ -21,6 +21,6 @@ knmi_process.status = status
 knmi_process.execute()
 
 
-knmi_clipc_validation = wps_knmi.KnmiWpsProcess(wps_knmi_processes.KnmiClipcValidationWPS())
+knmi_clipc_validation = wps_knmi.KnmiWpsProcess(wps_knmi_processes.KnmiClipcValidationDescriptor())
 knmi_clipc_validation.status = status
 knmi_clipc_validation.execute()
