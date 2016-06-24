@@ -14,4 +14,8 @@ export PYTHONPATH=/usr/people/mihajlov/PyWPS-pywps-3.2.2/:$PYTHONPATH
 export PYTHONPATH=$PYWPS_PROCESSES:$PYTHONPATH
 export PYTHONPATH=/usr/people/mihajlov/python/clipc/prov/:$PYTHONPATH
 
-python ./test.wps.py
+#python test.wps.py
+python init_knmi_wps.py
+
+
+#echo $PYTHONPATH

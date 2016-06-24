@@ -23,6 +23,8 @@ from collections import defaultdict
 from copy import deepcopy
 import io
 from prov import Error, serializers
+# import Error
+# import serializers
 
 import os
 import shutil
@@ -32,7 +34,8 @@ from six.moves.urllib.parse import urlparse
 
 from prov.identifier import Identifier, QualifiedName
 from prov.constants import *
-
+# from identifier import Identifier, QualifiedName
+# from constants import *
 
 # Data Types
 def _ensure_datetime(value):
