@@ -21,7 +21,7 @@ from pywps.Process import WPSProcess
 import provenance
 from pprint import pprint
 import netCDF4
-import provexport
+#import provexport
 
 #KnmiWebProcessDescriptor
  
@@ -29,11 +29,14 @@ import provexport
 class KnmiWebProcessDescriptor(object):
 
     # override this function to allow 
-    def process_function(self ,inputs, callback, content=None):
-        print "process_function" 
+    def process_execute_function(self ,inputs, callback):
+        print "process_execute_function" 
         #pprint (inputs) 
         pprint (inputs)
-        print "content: ",content 
+
+        #print "content: ",prov.content 
+
+        return {'content':'ANDREJ'} , inputs , None
 
     def __init__(self):
         self.structure = {}      
@@ -69,18 +72,22 @@ class KnmiWebProcessDescriptor(object):
                             "title"      : "KNMI Input Name 3" ,
                             "type"       : "String",
                             "default"    : "SU" ,
-                            "values"     : ["TG","TX","TN","TXx","TXn","TNx"]
+                            "values"     : ["TG","TX","TN","TXx","TXn","WOOOOOOOOOOOOOOOW"]
                             }               
                           ]
 
 
-        self.processCallback = self.process_function
+        self.processExecuteCallback = self.process_execute_function
 
 
 
 # generic KNMI process
 class KnmiWpsProcess(WPSProcess):
 
+    #def __init__(self):
+    #    KnmiWpsProcess.__init__(self, KnmiWebProcessDescriptor() )
+
+    # descirbes WPS
     def __init__(self,descriptor):
         WPSProcess.__init__(self,
                             identifier      = descriptor.structure["identifier"], 
@@ -100,16 +107,19 @@ class KnmiWpsProcess(WPSProcess):
                                                                           type       = inputDict["type"],
                                                                           default    = inputDict["default"] 
                                                                           ) 
-            self.inputs[inputDict["identifier"]].values = inputDict["values"]
+            try:              
+                if inputDict["values"] is not None:
+                    self.inputs[inputDict["identifier"]].values = inputDict["values"]
+            except Exception, e:
+                print "no values"
 
-        self.processCallback = descriptor.processCallback
+        self.processExecuteCallback = descriptor.processExecuteCallback
 
        
-
     def callback(self,message,percentage):
         self.status.set("%s" % str(message),str(percentage));
 
-    
+    # runs WPS
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
         # homedir = os.environ['HOME']
@@ -118,37 +128,45 @@ class KnmiWpsProcess(WPSProcess):
 
         def callback(b):
             self.callback("Processing",b)
-        
+
+        # PE used is dispel4py should be here
+        # currently    
+        self.callback("KnmiWpsProcess", 0)
         # bundle created here
         # use prov call back later... each start creates lineage info
         prov = provenance.MetadataD4P(  name=self.identifier , 
                                         description="Povenance using D4P for "+self.abstract ,
                                         username="andrej" ) #does wps provide a user id...
-        prov_input = []
-        prov_dict = {}
-        for k in self.inputs:
-            v = self.inputs[k].getValue()
-            prov_input.append( (k+'='+v) )
-            prov_dict[k] = v
-
-        prov.start(prov_input , prov_dict ) # use prov call back later... each start creates lineage info
         
-        netcdf_content_dict = {}
+
+        # MOVED IN PROCESS CAUSES DEPENDACNY... for demo...
+        prov.start( self.inputs ) # use prov call back later... each start creates lineage info
+        self.callback("Start wps.", 10)
         try:
-            self.processCallback( self.inputs , callback , content=netcdf_content_dict )
+            content, source , fileO = self.processExecuteCallback( self.inputs , callback )
         except Exception, e:
             prov.errors(str(e))
             raise e
+        self.callback("Finished wps.", 90)
+        prov.content = content     
 
-        #prov.content     
-            
+        prov.output = fileO   
+        
+        try:
+            outputurl = self.inputs['netcdf_target'].getValue()
+        except Exception, e:
+            outputurl = "wpsoutputs"
+     
 
-
-        prov.finish( self.descriptor.structure,netcdf_content_dict)  
+        prov.finish( self.descriptor.structure , source , outputurl )  
+        prov.closeProv()
 
         prov.writeMetadata('bundle.json')
+        self.callback("metadata inserted.", 100)
 
 
+        #
+        # issues with prov library here, need to ironout...
         #xml = provexport.toW3Cprov( [prov.lineage] , [prov.bundle])
         #provenance.writeXML('w3c-prov.xml' , xml )
 

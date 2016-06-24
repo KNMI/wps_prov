@@ -1,5 +1,6 @@
 import exceptions
 import traceback
+import prov
 from prov.model import ProvDocument, Namespace, Literal, PROV, Identifier
 import datetime
 import uuid
