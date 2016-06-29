@@ -3,6 +3,9 @@
 # institution: KNMI
 # project: CLIPC
 
+The package contains provenance enabled pywps modules, abailable with generic combine functions. Provides reporting and provinance for netcdf files.
+
+
 
 # to test locally use ./run.wps.here.sh
 
