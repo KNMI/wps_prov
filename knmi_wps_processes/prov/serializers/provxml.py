@@ -13,10 +13,10 @@ import six
 
 logger = logging.getLogger(__name__)
 
-import prov
-import prov.identifier
-from prov.model import DEFAULT_NAMESPACES, sorted_attributes
-from prov.constants import *  # NOQA
+import knmi_wps_processes.prov as prov
+from knmi_wps_processes.prov.identifier import Identifier
+from knmi_wps_processes.prov.model import DEFAULT_NAMESPACES, sorted_attributes, QualifiedName
+from knmi_wps_processes.prov.constants import *  # NOQA
 
 
 # Create a dictionary containing all top-level PROV XML elements for an easy
@@ -164,7 +164,7 @@ class ProvXMLSerializer(prov.serializers.Serializer):
                 # To enable a mapping of Python types to XML and back,
                 # the XSD type must be written for these types.
                 ALWAYS_CHECK = [bool, datetime.datetime, float,
-                                prov.identifier.Identifier]
+                                Identifier]
                 # Add long and int on Python 2, only int on Python 3.
                 ALWAYS_CHECK.extend(six.integer_types)
                 ALWAYS_CHECK = tuple(ALWAYS_CHECK)
@@ -194,7 +194,7 @@ class ProvXMLSerializer(prov.serializers.Serializer):
                         if attr.namespace.prefix != "prov" \
                                 or "time" not in attr.localpart.lower():
                             xsd_type = XSD_DATETIME
-                    elif isinstance(value, prov.identifier.Identifier):
+                    elif isinstance(value, Identifier):
                         xsd_type = XSD_ANYURI
 
                     if xsd_type is not None:

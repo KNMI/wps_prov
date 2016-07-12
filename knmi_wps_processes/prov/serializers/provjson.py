@@ -12,9 +12,9 @@ import datetime
 import io
 import json
 
-from prov.serializers import Serializer, Error
-from prov.constants import *
-from prov.model import (Literal, Identifier, QualifiedName,
+from knmi_wps_processes.prov.serializers import Serializer, Error
+from knmi_wps_processes.prov.constants import *
+from knmi_wps_processes.prov.model import (Literal, Identifier, QualifiedName,
                         Namespace, ProvDocument, ProvBundle, first,
                         parse_xsd_datetime)
 

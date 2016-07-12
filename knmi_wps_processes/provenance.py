@@ -3,6 +3,7 @@
 #
 #   author: Andrej
 import os
+
 import json
 from pprint import pprint
 import datetime
@@ -13,9 +14,13 @@ import urllib
 from urlparse import urlparse
 import csv
 import StringIO
+import sys, traceback #traceback.print_exc(file=sys.stdout)
 
-
+import knmi_wps_processes
+##########################################
+# import knmi_wps_processes.prov as prov
 from prov.model import ProvDocument, Namespace, Literal, PROV, Identifier
+#from prov.serializers import provjson
 # 
 
 # read json examples from alessandro.
@@ -533,13 +538,14 @@ class MetadataD4P(object):
                 print "A1"
                 self.output.variables['knmi_provenance'].setncattr('lineage', json.dumps(oldlin) )
                 print "A2"
-                self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov(self.lineage , self.bundle) )
+                self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
                 print "A3"
                 self.output.close()
                 print "A4"
 
 
             except Exception, e:
+                traceback.print_exc(file=sys.stdout)
                 raise e
 
         print "end prov."

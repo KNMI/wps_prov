@@ -8,7 +8,7 @@ import io
 import logging
 logger = logging.getLogger(__name__)
 
-from prov.serializers import Serializer
+from knmi_wps_processes.prov.serializers import Serializer
 
 
 class ProvNSerializer(Serializer):

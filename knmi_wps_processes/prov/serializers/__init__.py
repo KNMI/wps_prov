@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 from knmi_wps_processes.prov import Error
-
+#from knmi_wps_processes import prov
 
 class Serializer(object):
     def __init__(self, document=None):
@@ -35,9 +35,9 @@ class Registry:
 
     @staticmethod
     def load_serializers():
-        from prov.serializers.provjson import ProvJSONSerializer
-        from prov.serializers.provn import ProvNSerializer
-        from prov.serializers.provxml import ProvXMLSerializer
+        from knmi_wps_processes.prov.serializers.provjson import ProvJSONSerializer
+        from knmi_wps_processes.prov.serializers.provn import ProvNSerializer
+        from knmi_wps_processes.prov.serializers.provxml import ProvXMLSerializer
 
         Registry.serializers = {
             'json': ProvJSONSerializer,
