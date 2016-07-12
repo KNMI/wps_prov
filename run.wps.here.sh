@@ -15,7 +15,7 @@ export PYTHONPATH=$PYWPS_PROCESSES:$PYTHONPATH
 export PYTHONPATH=/usr/people/mihajlov/python/clipc/prov/:$PYTHONPATH
 
 #python test.wps.py
-python init_knmi_wps.py
+python init_knmi_wps_local.py
 
 
 #echo $PYTHONPATH

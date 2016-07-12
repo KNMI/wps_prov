@@ -22,9 +22,12 @@ import dateutil.parser
 from collections import defaultdict
 from copy import deepcopy
 import io
-from prov import Error, serializers
-# import Error
+
+from knmi_wps_processes import *
+from knmi_wps_processes.prov import Error, serializers
+#import Error 
 # import serializers
+#from prov import Error, serializers
 
 import os
 import shutil
@@ -32,10 +35,10 @@ import tempfile
 
 from six.moves.urllib.parse import urlparse
 
-from prov.identifier import Identifier, QualifiedName
-from prov.constants import *
-# from identifier import Identifier, QualifiedName
-# from constants import *
+
+from knmi_wps_processes.prov.identifier import Identifier, QualifiedName
+from knmi_wps_processes.prov.constants import *
+
 
 # Data Types
 def _ensure_datetime(value):

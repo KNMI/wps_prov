@@ -1,6 +1,7 @@
-import knmi_wps_processes
+from knmi_wps_processes import *
 from knmi_wps_processes import wps_knmi
 from knmi_wps_processes import wps_knmi_processes
+from knmi_wps_processes.wps_knmi import KnmiWpsProcess
 from pywps.Process import Status, WPSProcess
 
 #
@@ -70,68 +71,8 @@ class Combine(KnmiWpsProcess):
     def __init__(self):
         KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCombineDescriptor())
 
-# knmiprocess = wps_knmi.KnmiWpsProcess(wps_knmi_processes.KnmiClipcValidationDescriptor())
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-#class KnmiWpsClipcValidation(wps_knmi.KnmiWpsProcess):
-#    def __init__(self):
-#       wps_knmi.KnmiWpsProcess.__init__(wps_knmi_processes.KnmiClipcValidationDescriptor())
-# knmiprocess = AndrejWpsProcess()
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-# knmiprocess = Generic()
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-#knmiprocess = Copy()
 
 
-# http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=execute&identifier=knmi_weight&version=1.0.0&storeexecuteresponse=true&netcdf_source=COPY1.nc&weight=1.2&netcdf_target=X1.nc&variable=vDTR&tags=dre
-# http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=execute&identifier=knmi_weight&version=1.0.0&storeexecuteresponse=true&netcdf_source=COPY1.nc&weight=1.2&netcdf_target=X1.nc&variable=vDTR&tags=dre
-# Pipe...
-
-# knmiprocess = Weight()
-
-# knmiprocess.inputs['netcdf_source'].setValue( {'value':'http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_JAN_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc'})
-# knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_A.nc'} )
-# knmiprocess.inputs['weight'].setValue( {'value' : '20.0' } )
-# knmiprocess.inputs['variable'].setValue( {'value' : 'vDTR' } )
-# knmiprocess.inputs['tags'].setValue( {'value' : 'provknmi' } )
-
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-# knmiprocess.inputs['netcdf_source'].setValue( {'value':'COPY_A.nc'})
-# knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_B.nc'} )
-# knmiprocess.inputs['weight'].setValue(   {'value' : '0.0' } )
-# knmiprocess.inputs['variable'].setValue( {'value' : 'vDTR' } )
-# knmiprocess.inputs['tags'].setValue( {'value' : 'provknmi' } )
-
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-# knmiprocess.inputs['netcdf_source'].setValue( {'value':'COPY_B.nc'})
-# knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_C.nc'} )
-# knmiprocess.inputs['weight'].setValue(   {'value' : '0.0' } )
-# knmiprocess.inputs['variable'].setValue( {'value' : 'vDTR' } )
-# knmiprocess.inputs['tags'].setValue( {'value' : 'provknmi' } )
-
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-# knmiprocess = Weight()
-# knmiprocess.inputs['netcdf_source'].setValue( {'value':'COPY_A.nc'})
-# knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_C2.nc'} )
-# knmiprocess.inputs['weight'].setValue(   {'value' : '3.0' } )
-# knmiprocess.inputs['variable'].setValue( {'value' : 'vDTR' } )
-# knmiprocess.inputs['tags'].setValue( {'value' : 'provknmi' } )
-
-# knmiprocess.status = status
-# knmiprocess.execute()
-
-'''
 knmiprocess = Weight()
 
 knmiprocess.inputs['netcdf_source'].setValue( {'value':'http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_JAN_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc'})
@@ -184,5 +125,4 @@ knmiprocess.inputs['tags'].setValue( {'value' : 'ale' } )
 
 knmiprocess.status = status
 knmiprocess.execute()
-'''
 

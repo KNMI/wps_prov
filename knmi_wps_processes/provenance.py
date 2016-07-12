@@ -13,8 +13,9 @@ import urllib
 from urlparse import urlparse
 import csv
 import StringIO
-from prov.model import ProvDocument as PD
 
+
+from prov.model import ProvDocument, Namespace, Literal, PROV, Identifier
 # 
 
 # read json examples from alessandro.
@@ -131,7 +132,7 @@ def writePOST(provenance_json):
 
 def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
         
-        g = PD()
+        g = ProvDocument()
         vc = Namespace("knmi", "http://knmi.nl")  # namespaces do not need to be explicitly added to a document
         con = Namespace("con", "http://knmi.nl/control")
         g.add_namespace("dcterms", "http://purl.org/dc/terms/")
@@ -523,13 +524,20 @@ class MetadataD4P(object):
                    print e
                    #oldlin = []
 
+                #print self.lineage
+
                 oldlin.append(self.lineage)
 
+                print self.output.variables['knmi_provenance']
+
+                print "A1"
                 self.output.variables['knmi_provenance'].setncattr('lineage', json.dumps(oldlin) )
-
+                print "A2"
                 self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov(self.lineage , self.bundle) )
-
+                print "A3"
                 self.output.close()
+                print "A4"
+
 
             except Exception, e:
                 raise e
