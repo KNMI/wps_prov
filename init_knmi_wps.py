@@ -24,22 +24,6 @@ status = MyStatus()
 # http://pc150396.knmi.nl:9080/impactportal/WPS?
 #   service=WPS&request=execute&identifier=wps_andrej&version=1.0.0&storeexecuteresponse=true
 # 
-class AndrejWpsProcess(WPSProcess):
-
-    def __init__(self):
-        WPSProcess.__init__(self, 
-                            identifier = 'wps_andrej', # only mandatary attribute = same file name
-                            title = 'Andrej tests wps',
-                            abstract = 'WPS without lineage',
-                            version = "1.0",
-                            storeSupported = 'true',
-                            statusSupported = 'true',
-                            grassLocation =False)
-
-    def execute(self):
-        print "ANDREJ!ANDREJ!ANDREJ!"
-
-        self.status.set("ready",100);
 
 # knmi_process = wps_knmi.KnmiWpsProcess()
 # knmi_process.status = status
@@ -54,21 +38,22 @@ class AndrejWpsProcess(WPSProcess):
 #     # KnmiWebProcessDescriptor
 #     def __init__(self):
 #         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi.KnmiClipcValidationDescriptor() )
-       
-class Copy(KnmiWpsProcess):
+     
+class Copy(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):
-        KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCopyDescriptor())
+        wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCopyDescriptor())
 
-class Weight(KnmiWpsProcess):
-    # KnmiWebProcessDescriptor
-    def __init__(self):
-        KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiWeightCopyDescriptor())
 
-class Combine(KnmiWpsProcess):
+class Weight(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):
-        KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCombineDescriptor())
+        wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiWeightCopyDescriptor())
+
+class Combine(wps_knmi.KnmiWpsProcess):
+    # KnmiWebProcessDescriptor
+    def __init__(self):
+        wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCombineDescriptor())
 
 # knmiprocess = wps_knmi.KnmiWpsProcess(wps_knmi_processes.KnmiClipcValidationDescriptor())
 # knmiprocess.status = status

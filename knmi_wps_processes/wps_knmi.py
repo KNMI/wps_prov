@@ -14,7 +14,7 @@ from pywps.Process import WPSProcess
 #import dateutil.parser
 #from datetime import datetime
 
-#import os
+import os
 #from os.path import expanduser
 #from mkdir_p import *
 #transfer_limit_Mb = 100
@@ -46,7 +46,7 @@ class KnmiWebProcessDescriptor(object):
         self.structure["identifier"] = "knmi_wps"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "KNMI WPS Process" # = 'SimpleIndices',
         self.structure["abstract"] = "General KNMI WPS consisting of a tupple of inputs (see generic descriptor and process example)" #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
-        self.structure["version"] = "0.0",
+        self.structure["version"] = "1.0.0",
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
         self.structure["grassLocation"] = False
@@ -108,6 +108,8 @@ class KnmiWpsProcess(WPSProcess):
                                                                           type       = inputDict["type"],
                                                                           default    = inputDict["default"] 
                                                                           ) 
+            #######
+            #abstract="application/netcdf"
             try:              
                 if inputDict["values"] is not None:
                     self.inputs[inputDict["identifier"]].values = inputDict["values"]
@@ -123,9 +125,8 @@ class KnmiWpsProcess(WPSProcess):
     # runs WPS
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
-        # homedir = os.environ['HOME']
-        # os.chdir(homedir)
-        
+        homedir = os.environ['HOME']
+        os.chdir(homedir)
 
         def callback(b):
             self.callback("Processing",b)
@@ -143,6 +144,7 @@ class KnmiWpsProcess(WPSProcess):
         # MOVED IN PROCESS CAUSES DEPENDACNY... for demo...
         prov.start( self.inputs ) # use prov call back later... each start creates lineage info
         self.callback("Start wps.", 10)
+
         try:
             content, source , fileO = self.processExecuteCallback( self.inputs , callback )
         except Exception, e:

@@ -5,6 +5,23 @@ import json
 from pprint import pprint
 import numpy as np
 import clipc_wp8_norm as cn
+import logging
+
+
+# logger = logging.getLogger('server_logger')
+# fh = logging.FileHandler('/nobackup/users/mihajlov/impactp/tmp/server.log')
+# logger.setLevel(logging.INFO);
+# fh.setLevel(logging.INFO)
+# logger.addHandler(fh)
+
+
+def logger_info(str1):
+  with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
+    f.write(str(str1)+"\n")
+  f.close()
+
+logger_info("doit!")
+
 
 def checkVariable(nc_fid, variable, answer, count1):
       try:
@@ -147,84 +164,91 @@ def copyNetCDF( source_name , target_name):
 
   return w_nc_fid
 
+
+
+
 def weightNetCDF( source_name , weight , layer , target_name):
 
-  #print "weightNetCDF"
-  # print source_name
-  # print weight
-  # print target_name
-  # print "START"
 
   try:
       nc_fid = netCDF4.Dataset( source_name , 'r') 
-
-      #print "read worked"
-
-      try:
-        w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
-        
-        content = dict()
-
-        for var_name, dimension in nc_fid.dimensions.iteritems():
-            w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
-
-        for var_name, ncvar in nc_fid.variables.iteritems():
-            outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
-          
-            ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
-
-            outVar.setncatts(  ad  )
-            
-            # astype('f4')
-            if var_name == layer:   
-              try:
-
-                if weight in cn.nrm.keys():
-                  outVar[:] = cn.norm(ncvar[:],weight)
-                else:  
-                  outVar[:] = float(weight) * ncvar[:]
-              except Exception, e:
-                raise e
-            elif var_name != 'knmi_provenance': 
-              outVar[:] = ncvar[:]
-            
-        createKnmiProvVar(w_nc_fid)
-        
-        global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
-        
-        #pprint(global_vars)
-
-        # bundStr = json.dumps(prov.bundle)
-        
-        # #print bundStr
-        # #print type(global_vars)
-
-        # try:
-        #   global_vars['bundle'] = global_vars['bundle']+"\n"+ bundStr
-            # except Exception, e:
-        #   print e
-        #   global_vars['bundle'] = bundStr
-  
-        histStr = "weightNetCDF knmi: "+target_name+"weight of "+weight+" to "+source_name
-        try:
-          global_vars['history'] = global_vars['history']+"\n"+histStr
-        except Exception, e:
-          global_vars['history'] = histStr
-
-         
-        for k in sorted(global_vars.keys()):
-            v = global_vars[k] 
-            w_nc_fid.setncattr(  k , v )
-
-      except Exception, e:
-        print "exception writing: ",target_name
-        raise e
-
- 
   except Exception, e:
     print "exception reading: ",source_name
     raise e
 
+      #print "read worked"
+  logger_info("read done")    
+  try:
+
+    w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
+    
+    logger_info("write started")
+
+    content = dict()
+
+    for var_name, dimension in nc_fid.dimensions.iteritems():
+        w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+
+    logger_info("copy var start")    
+    for var_name, ncvar in nc_fid.variables.iteritems():
+        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+      
+        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+
+        outVar.setncatts(  ad  )
+        
+        # astype('f4')
+        if var_name == layer:   
+          try:
+            logger_info("w:"+weight)               
+            logger_info(type(weight))
+
+            if weight in cn.nrm.keys():
+              outVar[:] = cn.norm(ncvar[:],weight)
+            else:  
+              outVar[:] = float(weight) * ncvar[:]
+          except Exception, e:
+            logger_info(e)
+            raise e
+        elif var_name != 'knmi_provenance': 
+          outVar[:] = ncvar[:]
+        
+    createKnmiProvVar(w_nc_fid)
+
+    global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+    
+    #pprint(global_vars)
+
+    # bundStr = json.dumps(prov.bundle)
+    
+    # #print bundStr
+    # #print type(global_vars)
+
+    # try:
+    #   global_vars['bundle'] = global_vars['bundle']+"\n"+ bundStr
+        # except Exception, e:
+    #   print e
+    #   global_vars['bundle'] = bundStr
+
+    histStr = "weightNetCDF knmi: "+target_name+"weight of "+weight+" to "+source_name
+    try:
+      global_vars['history'] = global_vars['history']+"\n"+histStr
+    except Exception, e:
+      global_vars['history'] = histStr
+
+     
+    for k in sorted(global_vars.keys()):
+        v = global_vars[k] 
+        w_nc_fid.setncattr(  k , v )
+
+  except Exception, e:
+    logger_info("exception writing: [%s]",target_name)
+
+
+
+    raise e
+
+ 
 
   return w_nc_fid
 
@@ -275,28 +299,33 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
         except Exception, e:
           global_vars['history'] = histStr
 
+        logger_info("error>>>>>>>>>>>>: [%s]",str(w_nc_fid)) 
 
-        for k in sorted(global_vars.keys()):
-            v = global_vars[k] 
-            if k in ['lineage','bundle']:
-              w_nc_fid.variables['knmi_provenance'].setncattr(  k , v )
-            else:
-              w_nc_fid.setncattr(  k , v )
+        try:
+          for k in sorted(global_vars.keys()):
+              v = global_vars[k] 
+              if k in ['lineage','bundle']:
+                w_nc_fid.variables['knmi_provenance'].setncattr(  k , v )
+              else:
+                w_nc_fid.setncattr(  k , v )
 
-        for k in sorted(global_vars2.keys()):
-            v = global_vars2[k] 
-            if k in ['lineage','bundle']:
-              w_nc_fid.variables['knmi_provenance'].setncattr(  k+"2" , v )
-            else:
-              w_nc_fid.setncattr(  k+"2" , v )
+          for k in sorted(global_vars2.keys()):
+              v = global_vars2[k] 
+              if k in ['lineage','bundle']:
+                w_nc_fid.variables['knmi_provenance'].setncattr(  k+"2" , v )
+              else:
+                w_nc_fid.setncattr(  k+"2" , v )
+
+        except Exception, e:
+          logger_info( "Exception: ncattrs not added in combine")
 
       except Exception, e:
-        print "Exception: ",target_name
+        logger_info( "Exception: "+target_name)
         raise e
 
   except Exception, e:
-    print "Exception: ",source_name1
-    print "Exception: ",source_name2
+    logger_info( "Exception: "+source_name1)
+    logger_info( "Exception: "+source_name2)
     raise e
 
 

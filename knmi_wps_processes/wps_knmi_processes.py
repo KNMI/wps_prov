@@ -4,6 +4,9 @@ from pywps.Process import Status
 from pprint import pprint
 import netCDF4
 import numpy as np
+from datetime import datetime
+import os
+
 #from clipcombine.clipc_combine_process import clipc_combine_process
 # run from run.wps.here.py (this allows the local cgi to be used...)
 # author: ANDREJ
@@ -111,7 +114,7 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
         self.structure["identifier"] = "knmi_clipc_validator"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "KNMI WPS: CLIPC Validator" # = 'SimpleIndices',
         self.structure["abstract"] = "KNMI WPS Process: CLIPC netcdf metadata validator. Checks netCDF global ncattributes for relevant metadata fields." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
-        self.structure["version"] = "0.0"
+        self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
         self.structure["grassLocation"] = False
@@ -125,6 +128,14 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
                             "type"       : "String",
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None #"TG","TX","TN","TXx","TXn","TNx"]
+                            }  
+                            ,
+                            { 
+                            "identifier" : "tags" , 
+                            "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
+                            "type"       : type("String"),
+                            "default"    : "knmi_prov_research",
+                            "values"     : ""
                             }              
                           ]
 
@@ -175,7 +186,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
         self.structure["identifier"] = "knmi_copy"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "KNMI WPS: Copy netcdf" # = 'SimpleIndices',
         self.structure["abstract"] = "KNMI WPS Process: CLIPC netcdf metadata validator. Checks netCDF global ncattributes for relevant metadata fields." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
-        self.structure["version"] = "0.0"
+        self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
         self.structure["grassLocation"] = False
@@ -185,7 +196,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
         self.inputsTuple = [
                             { 
                             "identifier" : "netcdf_source" , 
-                            "title"      : "Copy input: netCDF opendap link." ,
+                            "title"      : "Copy input: Input netCDF." ,
                             "type"       : type("String"),
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             # "default"    : "COPY1.nc",
@@ -194,19 +205,19 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             } ,
                             { 
                             "identifier" : "netcdf_target" , 
-                            "title"      : "Copy input: netCDF opendap link." ,
+                            "title"      : "Copy input: Output netCDF." ,
                             "type"       : type("String"),
                             #"default"    : "COPY_vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             #"default"    : "COPY1.nc",
                             #"default"    : "COPY2.nc",
-                            "default"    : "COPY4.nc",
+                            "default"    : "COPY_OUT.nc",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "xstuff",
+                            "default"    : "knmi_prov_research",
                             "values"     : ""
                             }                   
                           ]
@@ -221,25 +232,50 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
     # http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=getcapabilities
     # http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=execute&identifier=knmi_weight&version=1.0.0&storeexecuteresponse=true&netcdf_source=COPY1.nc&weight=1.2&netcdf_target=X1.nc&variable=vDTR&tags=dre
 
+ 
 
     # override with validation process
     def process_execute_function(self , inputs, callback):
+        
+        def logger_info(str1):
+          with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
+            f.write(str(str1)+"\n")
+          f.close()
 
-        callback("process_execute_function_weighted_copy")
+        logger_info("doit! process_execute_function")
+
+        callback(1)
 
         pprint(inputs) 
 
         content1 = {}
 
         source1 = [inputs['netcdf_source'].getValue()]
+
+        # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+        pathToAppendToOutputDirectory = "/WPS_"+"TEST"+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+
+        """ URL output path """
+        fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+        
+        """ Internal output path"""
+        fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+
+        """ Create output directory """
+        if not os.path.exists(fileOutPath):
+            os.makedirs(fileOutPath)
+
         # validator old                 
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
+
+            logger_info("doit! process_execute_function start weightNetCDF")
             netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
                                                 inputs['weight'].getValue()            ,
                                                 inputs['variable'].getValue()          ,
-                                                inputs['netcdf_target'].getValue() )
+                                                fileOutPath+inputs['netcdf_target'].getValue() )   
 
+            logger_info("doit! process_execute_function start weightNetCDF DONE")
             #prov.output = netcdf_w
             #print netcdf_w
 
@@ -250,6 +286,7 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
                 content1[str(k).replace(".","_")] = str(v) 
 
         except Exception, e:
+            logger_info("doit! process_execute_function start weightNetCDF Exceptions!!!!!" )
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
@@ -262,13 +299,14 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 
 
     def __init__( self ):
+
         self.structure = {}      
         self.inputsTuple = []
 
         self.structure["identifier"] = "knmi_weight"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "KNMI WPS: Copy with weight netcdf" # = 'SimpleIndices',
         self.structure["abstract"] = "KNMI WPS Process: CLIPC weight." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
-        self.structure["version"] = "0.0"
+        self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
         self.structure["grassLocation"] = False
@@ -278,43 +316,44 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
         self.inputsTuple = [
                             { 
                             "identifier" : "netcdf_source" , 
-                            "title"      : "Copy input: netCDF opendap surce list." ,
+                            "title"      : "Copy input: Input netCDF opendap." ,
                             "type"       : type("String"),
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             # "default"    : "COPY1.nc",
                             #"default"    : "COPY2.nc",
+                            "abstract"   : "application/netcdf",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "weight" , 
-                            "title"      : "Copy input: netCDF input weight list." ,
+                            "title"      : "Copy input: Weight of netCDF input. [\"normnone\" , \"normminmax\", \"normstndrd\"]" ,
                             "type"       : type("String"),
-                            "default"    : "100.0" ,
+                            "default"    : "2.0" ,
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "variable" , 
-                            "title"      : "Copy input: netCDF input weight list." ,
+                            "title"      : "Copy input: VariableName of netCDF layer." ,
                             "type"       : type("String"),
                             "default"    : "vDTR" ,
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "netcdf_target" , 
-                            "title"      : "Copy input: netCDF opendap link." ,
+                            "title"      : "Copy input: Output netCDF." ,
                             "type"       : type("String"),
                             #"default"    : "COPY_vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             #"default"    : "COPY2.nc",
                             #"default"    : "COPY3.nc",
                             #"default"    : "COPY_A.nc",
-                            "default"    : "COPY_B.nc",
+                            "default"    : "WEIGHT.nc",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "xstuff",
+                            "default"    : "knmi_prov_research",
                             "values"     : None
                             }                   
                           ]
@@ -331,7 +370,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
     # override with validation process
     def process_execute_function(self , inputs, callback):
 
-        callback("process_execute_function combine")
+        callback(22)
 
         pprint(inputs) 
 
@@ -344,13 +383,17 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
         op = {  "add"       :np.add,
                 "subtract"  :np.subtract,
                 "multiply"  :np.multiply,
-                "divide"    :np.divide }
+                "divide"    :np.divide ,
+                "equal"     :np.equal  ,
+                "less"      :np.less ,
+                "greater"   :np.greater }
         try:
             #operation = np.__getattr__(inputs['operation'].getValue())
             operation = op[inputs['operation'].getValue()]
         except Exception ,e:
             raise "Error exception in operator"
 
+        callback(33)    
         try:
             netcdf_w = processlib.combineNetCDF( inputs['netcdf_source1'].getValue()      ,
                                                  inputs['variable1'].getValue()           ,
@@ -361,7 +404,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
 
             #prov.output = netcdf_w
             #print netcdf_w
-
+            callback(44)
             #content of prov... move...
             for k in netcdf_w.ncattrs():
               v = netcdf_w.getncattr(k)
@@ -374,7 +417,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
             pprint (content1)
 
             raise e
-
+        callback(99)    
         #prov.content.append(content1)
         return content1 , source1, netcdf_w
 
@@ -387,7 +430,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
         self.structure["identifier"] = "knmi_combine"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "KNMI WPS: Combine two inputs into a single netCDF." # = 'SimpleIndices',
         self.structure["abstract"] = "KNMI WPS Process: CLIPC Combine." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
-        self.structure["version"] = "0.0"
+        self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
         self.structure["grassLocation"] = False
@@ -397,23 +440,21 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
         self.inputsTuple = [
                             { 
                             "identifier" : "netcdf_source1" , 
-                            "title"      : "Combine input: netCDF opendap surce list." ,
+                            "title"      : "Combine input: Source 1 netCDF opendap." ,
                             "type"       : type("String"),
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
-                            # "default"    : "COPY1.nc",
-                            #"default"    : "COPY2.nc",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "variable1" , 
-                            "title"      : "Combine input: netCDF input weight list." ,
+                            "title"      : "Combine input: VariableName 1." ,
                             "type"       : type("String"),
-                            "default"    : "100.0" ,
+                            "default"    : "vDTR" ,
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "netcdf_source2" , 
-                            "title"      : "Combine input: netCDF opendap surce list." ,
+                            "title"      : "Combine input: Source 2 netCDF opendap." ,
                             "type"       : type("String"),
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             # "default"    : "COPY1.nc",
@@ -422,34 +463,30 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             } ,
                             { 
                             "identifier" : "variable2" , 
-                            "title"      : "Combine input: netCDF input weight list." ,
+                            "title"      : "Combine input: VariableName 2." ,
                             "type"       : type("String"),
                             "default"    : "vDTR" ,
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "netcdf_target" , 
-                            "title"      : "Combine input: netCDF opendap link." ,
+                            "title"      : "Combine input: Output netCDF." ,
                             "type"       : type("String"),
-                            #"default"    : "COPY_vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
-                            #"default"    : "COPY2.nc",
-                            #"default"    : "COPY3.nc",
-                            #"default"    : "COPY_A.nc",
-                            "default"    : "COPY_B.nc",
+                            "default"    : "COMBO.nc",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "operation" , 
-                            "title"      : "Combine input: Any numpy function." ,
+                            "title"      : "Combine input: Operation." ,
                             "type"       : type("String"),
                             "default"    : "add",
-                            "values"     : ["add","subtract","multiply","divide"]
+                            "values"     : ["add","subtract","multiply","divide", "equal", "less" , "greater"]
                             } , 
                             { 
                             "identifier" : "tags" , 
                             "title"      : "Combine input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "xstuff",
+                            "default"    : "knmi_prov_research",
                             "values"     : None
                             }                   
                           ]
