@@ -34,16 +34,15 @@ status = MyStatus()
 #     def __init__(self):
 #         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi.KnmiWebProcessDescriptor() )
 
-# class Validate(wps_knmi.KnmiWpsProcess):
-#     # KnmiWebProcessDescriptor
-#     def __init__(self):
-#         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi.KnmiClipcValidationDescriptor() )
+class Validate(wps_knmi.KnmiWpsProcess):
+    # KnmiWebProcessDescriptor
+    def __init__(self):
+        wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiClipcValidationDescriptor() )
      
 class Copy(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):
         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCopyDescriptor())
-
 
 class Weight(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor

@@ -15,12 +15,10 @@ from pywps.Process import WPSProcess
 #from datetime import datetime
 
 import os
-#from os.path import expanduser
-#from mkdir_p import *
-#transfer_limit_Mb = 100
-
+from datetime import datetime
 import provenance
 from pprint import pprint
+
 import netCDF4
 #import provexport
 
@@ -30,7 +28,7 @@ import netCDF4
 class KnmiWebProcessDescriptor(object):
 
     # override this function to allow 
-    def process_execute_function(self ,inputs, callback):
+    def process_execute_function(self ,inputs, callback, fileOutPath):
         print "process_execute_function" 
         #pprint (inputs) 
         pprint (inputs)
@@ -103,11 +101,20 @@ class KnmiWpsProcess(WPSProcess):
         self.descriptor = descriptor
 
         for inputDict in descriptor.inputsTuple:
-            self.inputs[inputDict["identifier"]] = self.addLiteralInput(  identifier = inputDict["identifier"] ,
-                                                                          title      = inputDict["title"],
-                                                                          type       = inputDict["type"],
-                                                                          default    = inputDict["default"] 
-                                                                          ) 
+
+            if inputDict.has_key("abstract"): 
+                self.inputs[inputDict["identifier"]] = self.addLiteralInput(  identifier = inputDict["identifier"] ,
+                                                                              title      = inputDict["title"],
+                                                                              type       = inputDict["type"],
+                                                                              default    = inputDict["default"], 
+                                                                              abstract   = inputDict["abstract"]
+                                                                              ) 
+            else:
+                self.inputs[inputDict["identifier"]] = self.addLiteralInput(  identifier = inputDict["identifier"] ,
+                                                                              title      = inputDict["title"],
+                                                                              type       = inputDict["type"],
+                                                                              default    = inputDict["default"] 
+                                                                      ) 
             #######
             #abstract="application/netcdf"
             try:              
@@ -118,22 +125,41 @@ class KnmiWpsProcess(WPSProcess):
 
         self.processExecuteCallback = descriptor.processExecuteCallback
 
-       
+    # logging using pywps status module   
     def callback(self,message,percentage):
         self.status.set("%s" % str(message),str(percentage));
 
+    # key:    
     # runs WPS
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
         homedir = os.environ['HOME']
         os.chdir(homedir)
 
+        """ pathToAppendToOutputDirectory """
+        # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+        pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M")
+
+        """ URL output path """
+        fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+        
+        """ Internal output path"""
+        fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+
+        """ Create output directory """
+        if not os.path.exists(fileOutPath):
+            os.makedirs(fileOutPath)
+
+        self.callback(fileOutURL,10)
+        self.callback(fileOutPath,11)    
+        # this can be extended for better debug...
         def callback(b):
-            self.callback("Processing",b)
+            self.callback("Processing wps_knmi ",b)
 
         # PE used is dispel4py should be here
         # currently    
-        self.callback("KnmiWpsProcess", 0)
+        self.callback("KnmiWpsProcess", 12)
+
         # bundle created here
         # use prov call back later... each start creates lineage info
         prov = provenance.MetadataD4P(  name=self.identifier , 
@@ -143,14 +169,14 @@ class KnmiWpsProcess(WPSProcess):
 
         # MOVED IN PROCESS CAUSES DEPENDACNY... for demo...
         prov.start( self.inputs ) # use prov call back later... each start creates lineage info
-        self.callback("Start wps.", 10)
+        self.callback("Start wps.", 13)
 
         try:
-            content, source , fileO = self.processExecuteCallback( self.inputs , callback )
+            content, source , fileO = self.processExecuteCallback( self.inputs , callback , fileOutPath )
         except Exception, e:
             prov.errors(str(e))
             raise e
-        self.callback("Finished wps.", 90)
+        self.callback("Finished wps.", 91)
         prov.content = content     
 
         prov.output = fileO   

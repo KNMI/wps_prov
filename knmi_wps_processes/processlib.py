@@ -169,27 +169,28 @@ def copyNetCDF( source_name , target_name):
 
 def weightNetCDF( source_name , weight , layer , target_name):
 
+  logger_info("weightNetCDF read "+source_name)    
 
   try:
       nc_fid = netCDF4.Dataset( source_name , 'r') 
   except Exception, e:
-    print "exception reading: ",source_name
+    logger_info( "exception reading: "+source_name )
     raise e
 
       #print "read worked"
-  logger_info("read done")    
+  logger_info("read done "+source_name)    
   try:
-
+    logger_info("write "+target_name)
     w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
     
-    logger_info("write started")
+    logger_info("write started "+target_name)
 
     content = dict()
 
     for var_name, dimension in nc_fid.dimensions.iteritems():
         w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
 
-    logger_info("copy var start")    
+    #logger_info("copy var start")    
     for var_name, ncvar in nc_fid.variables.iteritems():
         outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
       
@@ -200,15 +201,15 @@ def weightNetCDF( source_name , weight , layer , target_name):
         # astype('f4')
         if var_name == layer:   
           try:
-            logger_info("w:"+weight)               
-            logger_info(type(weight))
+            #logger_info("w:"+weight)               
+            #logger_info(type(weight))
 
             if weight in cn.nrm.keys():
               outVar[:] = cn.norm(ncvar[:],weight)
             else:  
               outVar[:] = float(weight) * ncvar[:]
           except Exception, e:
-            logger_info(e)
+            #logger_info(e)
             raise e
         elif var_name != 'knmi_provenance': 
           outVar[:] = ncvar[:]
@@ -242,10 +243,7 @@ def weightNetCDF( source_name , weight , layer , target_name):
         w_nc_fid.setncattr(  k , v )
 
   except Exception, e:
-    logger_info("exception writing: [%s]",target_name)
-
-
-
+    #logger_info("exception writing: [%s]",target_name)
     raise e
 
  
@@ -299,7 +297,7 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
         except Exception, e:
           global_vars['history'] = histStr
 
-        logger_info("error>>>>>>>>>>>>: [%s]",str(w_nc_fid)) 
+        #logger_info("error>>>>>>>>>>>>: [%s]",str(w_nc_fid)) 
 
         try:
           for k in sorted(global_vars.keys()):
@@ -317,15 +315,15 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
                 w_nc_fid.setncattr(  k+"2" , v )
 
         except Exception, e:
-          logger_info( "Exception: ncattrs not added in combine")
-
+          #logger_info( "Exception: ncattrs not added in combine")
+          raise e
       except Exception, e:
-        logger_info( "Exception: "+target_name)
+        #logger_info( "Exception: "+target_name)
         raise e
 
   except Exception, e:
-    logger_info( "Exception: "+source_name1)
-    logger_info( "Exception: "+source_name2)
+    #logger_info( "Exception: "+source_name1)
+    #logger_info( "Exception: "+source_name2)
     raise e
 
 

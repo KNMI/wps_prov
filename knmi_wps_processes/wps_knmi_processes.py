@@ -72,9 +72,9 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
 
 
     # override with validation process
-    def process_execute_function(self , inputs, callback):
+    def process_execute_function(self , inputs, callback, fileOutPath):
 
-        callback("process_function")
+        callback(33)
 
         pprint(inputs) 
 
@@ -102,7 +102,11 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
         pprint(content1)
         pprint( metaTestAnswer )
 
+        if not os.path.exists(fileOutPath):
+            os.rmdirs(fileOutPath)
+
         #prov.content.append(content1)
+        callback(44)
 
         return {"missing": [metaTestAnswer]} , inputs['netcdf'].getValue() , None
 
@@ -127,7 +131,8 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
                             "title"      : "Validator input: netCDF opendap link." ,
                             "type"       : "String",
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
-                            "values"     : None #"TG","TX","TN","TXx","TXn","TNx"]
+                            "values"     : None, 
+                            "abstract"   :"application/netcdf"
                             }  
                             ,
                             { 
@@ -135,7 +140,7 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
                             "default"    : "knmi_prov_research",
-                            "values"     : ""
+                            "values"     : None
                             }              
                           ]
 
@@ -147,19 +152,21 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
 
 
     # override with validation process
-    def process_execute_function(self , inputs, callback):
+    def process_execute_function(self , inputs, callback , fileOutPath):
 
-        callback("process_execute_function copy")
+        callback(5)
 
         #pprint(inputs) 
         content1 = {}
 
         source1 = [inputs['netcdf_source'].getValue()]
         # validator old                 
+        
+        callback(6)
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
             netcdf_w = processlib.copyNetCDF(    inputs['netcdf_source'].getValue() ,
-                                                 inputs['netcdf_target'].getValue() )
+                                                 fileOutPath+inputs['netcdf_target'].getValue() )
 
             #content of prov... move...
             for k in netcdf_w.ncattrs():
@@ -168,12 +175,13 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                 content1[str(k).replace(".","_")] = str(v) 
 
         except Exception, e:
+            callback(7)
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
 
             raise e
-
+        callback(8)
         #prov.content.append(content1)
         return content1 , source1, netcdf_w
 
@@ -201,7 +209,8 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             # "default"    : "COPY1.nc",
                             #"default"    : "COPY2.nc",
-                            "values"     : None
+                            "values"     : None, 
+                            "abstract"   :"application/netcdf"                            
                             } ,
                             { 
                             "identifier" : "netcdf_target" , 
@@ -218,7 +227,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
                             "default"    : "knmi_prov_research",
-                            "values"     : ""
+                            "values"     : None
                             }                   
                           ]
 
@@ -235,14 +244,14 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
  
 
     # override with validation process
-    def process_execute_function(self , inputs, callback):
+    def process_execute_function(self , inputs, callback,fileOutPath):
         
-        def logger_info(str1):
-          with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
-            f.write(str(str1)+"\n")
-          f.close()
+        # def logger_info(str1):
+        #   with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
+        #     f.write(str(str1)+"\n")
+        #   f.close()
 
-        logger_info("doit! process_execute_function")
+        #logger_info("doit! process_execute_function")
 
         callback(1)
 
@@ -252,30 +261,30 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 
         source1 = [inputs['netcdf_source'].getValue()]
 
-        # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
-        pathToAppendToOutputDirectory = "/WPS_"+"TEST"+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+# # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+# pathToAppendToOutputDirectory = "/WPS_"+"TEST"+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
 
-        """ URL output path """
-        fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
-        
-        """ Internal output path"""
-        fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+# """ URL output path """
+# fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
 
-        """ Create output directory """
-        if not os.path.exists(fileOutPath):
-            os.makedirs(fileOutPath)
+# """ Internal output path"""
+# fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
 
+# """ Create output directory """
+# if not os.path.exists(fileOutPath):
+#     os.makedirs(fileOutPath)
+        callback(69)
         # validator old                 
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
 
-            logger_info("doit! process_execute_function start weightNetCDF")
+            #logger_info("doit! process_execute_function start weightNetCDF")
             netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
                                                 inputs['weight'].getValue()            ,
                                                 inputs['variable'].getValue()          ,
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
 
-            logger_info("doit! process_execute_function start weightNetCDF DONE")
+            #logger_info("doit! process_execute_function start weightNetCDF DONE")
             #prov.output = netcdf_w
             #print netcdf_w
 
@@ -286,7 +295,7 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
                 content1[str(k).replace(".","_")] = str(v) 
 
         except Exception, e:
-            logger_info("doit! process_execute_function start weightNetCDF Exceptions!!!!!" )
+            #logger_info("doit! process_execute_function start weightNetCDF Exceptions!!!!!" )
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
@@ -368,7 +377,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
 
 
     # override with validation process
-    def process_execute_function(self , inputs, callback):
+    def process_execute_function(self , inputs, callback, fileOutPath):
 
         callback(22)
 
@@ -399,7 +408,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                                                  inputs['variable1'].getValue()           ,
                                                  inputs['netcdf_source2'].getValue()      ,
                                                  inputs['variable2'].getValue()           ,
-                                                 inputs['netcdf_target'].getValue()       ,
+                                                 fileOutPath+inputs['netcdf_target'].getValue()       ,
                                                  operation )
 
             #prov.output = netcdf_w
@@ -443,7 +452,8 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "title"      : "Combine input: Source 1 netCDF opendap." ,
                             "type"       : type("String"),
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
-                            "values"     : None
+                            "values"     : None, 
+                            "abstract"   :"application/netcdf"
                             } ,
                             { 
                             "identifier" : "variable1" , 
@@ -459,7 +469,8 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             # "default"    : "COPY1.nc",
                             #"default"    : "COPY2.nc",
-                            "values"     : None
+                            "values"     : None, 
+                            "abstract"   :"application/netcdf"
                             } ,
                             { 
                             "identifier" : "variable2" , 
