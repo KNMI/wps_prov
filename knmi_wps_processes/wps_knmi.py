@@ -83,11 +83,14 @@ class KnmiWebProcessDescriptor(object):
 # generic KNMI process
 class KnmiWpsProcess(WPSProcess):
 
+
     #def __init__(self):
     #    KnmiWpsProcess.__init__(self, KnmiWebProcessDescriptor() )
 
     # descirbes WPS
     def __init__(self,descriptor):
+        self.fileOutPath1 = None
+
         WPSProcess.__init__(self,
                             identifier      = descriptor.structure["identifier"], 
                             title           = descriptor.structure["title"],
@@ -97,9 +100,13 @@ class KnmiWpsProcess(WPSProcess):
                             statusSupported = descriptor.structure["statusSupported"],
                             grassLocation   = descriptor.structure["grassLocation"]
                             )
+        
 
         self.descriptor = descriptor
 
+        descriptor.process = self 
+        
+        
         for inputDict in descriptor.inputsTuple:
 
             if inputDict.has_key("abstract"): 
@@ -118,6 +125,12 @@ class KnmiWpsProcess(WPSProcess):
             #######
             #abstract="application/netcdf"
             try:              
+                if inputDict["maxOccurs"] is not None:
+                    self.inputs[inputDict["identifier"]].maxOccurs = inputDict["maxOccurs"]
+            except Exception, e:
+                print "no maxOccurs"
+
+            try:              
                 if inputDict["values"] is not None:
                     self.inputs[inputDict["identifier"]].values = inputDict["values"]
             except Exception, e:
@@ -129,6 +142,8 @@ class KnmiWpsProcess(WPSProcess):
     def callback(self,message,percentage):
         self.status.set("%s" % str(message),str(percentage));
 
+
+       
     # key:    
     # runs WPS
     def execute(self):
@@ -136,22 +151,26 @@ class KnmiWpsProcess(WPSProcess):
         homedir = os.environ['HOME']
         os.chdir(homedir)
 
-        """ pathToAppendToOutputDirectory """
-        # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
-        pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M")
+        #self.callback( "EXECUTE...",0)
 
-        """ URL output path """
-        fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
-        
-        """ Internal output path"""
-        fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+        if self.fileOutPath1 is None:
+            """ pathToAppendToOutputDirectory """
+            # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+            pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M")
 
-        """ Create output directory """
-        if not os.path.exists(fileOutPath):
-            os.makedirs(fileOutPath)
+            # """ URL output path """
+            # fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+            
+            """ Internal output path"""
+            self.fileOutPath1 = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
 
-        self.callback(fileOutURL,10)
-        self.callback(fileOutPath,11)    
+            """ Create output directory """
+            if not os.path.exists(self.fileOutPath1):
+                os.makedirs(self.fileOutPath1)
+        # else nothing        
+
+        #self.callback(fileOutURL,10)
+        self.callback(self.fileOutPath1,11)    
         # this can be extended for better debug...
         def callback(b):
             self.callback("Processing wps_knmi ",b)
@@ -172,7 +191,10 @@ class KnmiWpsProcess(WPSProcess):
         self.callback("Start wps.", 13)
 
         try:
-            content, source , fileO = self.processExecuteCallback( self.inputs , callback , fileOutPath )
+            content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
+
+            self.netcdf_w = fileO
+
         except Exception, e:
             prov.errors(str(e))
             raise e

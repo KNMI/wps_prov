@@ -2,10 +2,10 @@
 
 from distutils.core import setup
 
-setup(name='knmi_wps_processes',
+setup(name='prov_netcdf',
       version='1.0',
       description='CLIPC utilities used in PyWPS',
-      author='Andrej Mihajlovski',
+      author='Andrej Mihajlovski, Alessandro Spinuso',
       author_email='clipc@knmi.nl',
-      packages=['knmi_wps_processes'],
+      packages=['prov_netcdf'],
       )

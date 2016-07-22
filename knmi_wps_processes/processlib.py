@@ -20,7 +20,7 @@ def logger_info(str1):
     f.write(str(str1)+"\n")
   f.close()
 
-logger_info("doit!")
+# logger_info("doit!")
 
 
 def checkVariable(nc_fid, variable, answer, count1):
@@ -169,21 +169,21 @@ def copyNetCDF( source_name , target_name):
 
 def weightNetCDF( source_name , weight , layer , target_name):
 
-  logger_info("weightNetCDF read "+source_name)    
+  #logger_info("weightNetCDF read "+source_name)    
 
   try:
       nc_fid = netCDF4.Dataset( source_name , 'r') 
   except Exception, e:
-    logger_info( "exception reading: "+source_name )
+    #logger_info( "exception reading: "+source_name )
     raise e
 
       #print "read worked"
-  logger_info("read done "+source_name)    
+  #logger_info("read done "+source_name)    
   try:
-    logger_info("write "+target_name)
+    #logger_info("write "+target_name)
     w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
     
-    logger_info("write started "+target_name)
+    #logger_info("write started "+target_name)
 
     content = dict()
 
@@ -243,7 +243,7 @@ def weightNetCDF( source_name , weight , layer , target_name):
         w_nc_fid.setncattr(  k , v )
 
   except Exception, e:
-    #logger_info("exception writing: [%s]",target_name)
+    logger_info("exception writing: [%s]",target_name)
     raise e
 
  
