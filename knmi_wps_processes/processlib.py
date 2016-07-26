@@ -89,7 +89,7 @@ def testMetadata(ncattributes, files):
 def createKnmiProvVar(w_nc_fid):
   try:
     v = w_nc_fid.variables['knmi_provenance']
-    print v
+    #print v
   except Exception, e:
     v = w_nc_fid.createVariable('knmi_provenance', np.str )
     v.setncattr('bundle' ,'')

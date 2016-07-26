@@ -376,10 +376,10 @@ import xml.etree.ElementTree as et
 # import crsbbox
 
 
-def logger_info(str1):
-  with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-    f.write(str(str1)+"\n")
-  f.close()
+# def logger_info(str1):
+#   with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
+#     f.write(str(str1)+"\n")
+#   f.close()
 
 
 def getWCS(   wcs_url1, 
@@ -389,11 +389,7 @@ def getWCS(   wcs_url1,
               width=300,
               height=300,
               certfile=None):
-
-      def logger_info(str1):
-          with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-            f.write(str(str1)+"\n")
-          f.close()  
+ 
 
       # Describe Coverage: used to id layer,
       # data also available in getCapabilities...
@@ -402,7 +398,7 @@ def getWCS(   wcs_url1,
       request_describe =  wcs_url1 + "&" + str(data_describe)
 
       #print request_describe
-      logger_info(request_describe)
+      #logger_info(request_describe)
 
       #print request_describe
       if certfile != None:
@@ -448,8 +444,6 @@ def getWCS(   wcs_url1,
 
       request =  wcs_url1 + "&" + str(data)
 
-      logger_info(request)
-
       if certfile != None:
         opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
         response = opener.open(request)
@@ -470,8 +464,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
         
-
-        logger_info("wcs! process_execute_function")
+        #logger_info("wcs! process_execute_function")
 
         callback(1)
 
@@ -481,7 +474,6 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
         certfile = os.environ['HOME']+'certs/creds.pem'
 
-        logger_info("wcs! certfile "+certfile)
 
 
         callback(9)
@@ -489,13 +481,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
 
-            logger_info( "wcs! wcs start: " + fileOutPath )
-          
-            logger_info( "wcs! bbox: " + str(inputs['bbox'].getValue()) )
-
             bbox =  inputs['bbox'].getValue()[0]+","+inputs['bbox'].getValue()[1]+","+inputs['bbox'].getValue()[2]+","+inputs['bbox'].getValue()[3]
-
-            logger_info( "wcs! bbox start: " + bbox )       
 
             target = fileOutPath+inputs['netcdf_target'].getValue()
 
@@ -507,21 +493,23 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                                 inputs['height'].getValue(),
                                 certfile )
 
-            logger_info( "wcs! wcs done: " + netcdf_w )
-            #prov.output = netcdf_w
-            #print netcdf_w
+                   
 
             #content of prov... move...
             netcdf_w = netCDF4.Dataset( target , 'a')
+
+            processlib.createKnmiProvVar(netcdf_w)
+
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
             for k in netcdf_w.ncattrs():
               v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage"]:
+              if k not in ["bundle","lineage","bundle2","lineage2"]:
                 content1[str(k).replace(".","_")] = str(v) 
 
-            logger_info( "wcs! content: " + str(content1) )    
-
         except Exception, e:
-            logger_info("wcs! exception "+str(e))
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
@@ -595,7 +583,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                             "default"    : '200' ,
                             "values"     : None
                             } ,
-                                                        { 
+                            { 
                             "identifier" : "height" , 
                             "title"      : "Copy input: height of WCS slice." ,
                             "type"       : type("String"),
@@ -991,6 +979,12 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         
         try:
             netcdf_w = knmiprocess.netcdf_w
+
+            #netcdf_w = netCDF4.Dataset( target , 'a')
+
+            processlib.createKnmiProvVar(netcdf_w)
+
+
             logger_info(netcdf_w)
             callback(44)
             #content of prov... move...

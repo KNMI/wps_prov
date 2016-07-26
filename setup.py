@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='prov_netcdf',
+setup(name='ProvNetcdf',
       version='1.0',
       description='CLIPC utilities used in PyWPS',
       author='Andrej Mihajlovski, Alessandro Spinuso',

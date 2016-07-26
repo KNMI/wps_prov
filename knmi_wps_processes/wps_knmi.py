@@ -195,23 +195,31 @@ class KnmiWpsProcess(WPSProcess):
 
             self.netcdf_w = fileO
 
+            self.callback("Finished wps."+str(fileO), 92)
+
         except Exception, e:
             prov.errors(str(e))
             raise e
-        self.callback("Finished wps.", 91)
+            
+        self.callback("Finished content.", 93)
         prov.content = content     
+
+        self.callback("fileO:"+str(type(fileO)), 94)
 
         prov.output = fileO   
         
+        ''' ??? provenance related can be moved'''
         try:
             outputurl = self.inputs['netcdf_target'].getValue()
         except Exception, e:
             outputurl = "wpsoutputs"
      
 
+        ''' adds knmi_prov '''
         prov.finish( self.descriptor.structure , source , outputurl )  
         prov.closeProv()
 
+        ''' output to local json '''
         prov.writeMetadata('bundle.json')
         self.callback("metadata inserted.", 100)
 

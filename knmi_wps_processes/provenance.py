@@ -511,14 +511,29 @@ class MetadataD4P(object):
 
 
     # special case adding provenance to netcdf, generalise...
-    def closeProv(self):        
+    def closeProv(self):     
+
+        def logger_info(str1):
+              with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
+                f.write(str(str1)+"\n")
+              f.close()
+
+
         if self.output is not None:
             try:
-                print "closeProv()"
+                logger_info("closeProv()")
+                #logger_info("closeProv() "+str(self.output))
+                #logger_info("closeProv() "+str(self.output.variables))
+
                 self.output.setncattr('uuid' , self.uuid )
+
+                #logger_info("closeProv() "+str(self.output.variables['knmi_provenance']))
+
                 self.output.variables['knmi_provenance'].setncattr('bundle' , [json.dumps(self.bundle)])
 
                 #print json.dumps(self.bundle)
+
+                #logger_info("closeProv() ...")
                 try:
                    oldlin = json.loads(self.output.variables['knmi_provenance'].getncattr('lineage'))
                 except Exception, e:
@@ -526,23 +541,36 @@ class MetadataD4P(object):
                 try:
                    oldlin.append(json.loads(self.output.variables['knmi_provenance'].getncattr('lineage2')))
                 except Exception, e:
+                   traceback.print_exc(file=sys.stdout)
                    print e
                    #oldlin = []
 
                 #print self.lineage
+                #logger_info("closeProv() AAA")
 
                 oldlin.append(self.lineage)
 
-                print self.output.variables['knmi_provenance']
+                # logger_info("closeProv() lineage "+str(self.lineage))
+                # logger_info("closeProv() bundle  "+str(self.bundle))
+                # logger_info("closeProv() oldlin  "+str(oldlin))
 
-                print "A1"
+
                 self.output.variables['knmi_provenance'].setncattr('lineage', json.dumps(oldlin) )
-                print "A2"
-                self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
-                print "A3"
-                self.output.close()
-                print "A4"
+              
 
+
+                logger_info("closeProv() knmi_provenance var "+str( self.output.variables['knmi_provenance'] ))
+                #logger_info("closeProv() CCC")
+
+                #logger_info("closeProv() "+str(toW3Cprov([self.lineage] , [self.bundle])))
+
+                #logger_info("closeProv() DDD")
+
+                self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
+                
+                logger_info("closeProv()  end!!!!!"  )  
+                self.output.close()
+                    
 
             except Exception, e:
                 traceback.print_exc(file=sys.stdout)
