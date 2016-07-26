@@ -2,10 +2,10 @@
 
 from distutils.core import setup
 
-setup(name='ProvNetcdf',
+setup(name='ProvenanceNetcdf',
       version='1.0',
-      description='CLIPC utilities used in PyWPS',
+      description='Provenance tools used by PyWPS with NetCDFs',
       author='Andrej Mihajlovski, Alessandro Spinuso',
       author_email='clipc@knmi.nl',
-      packages=['prov_netcdf'],
+      packages=['knmi_wps_processes'], #dispel4py is also localy used...
       )

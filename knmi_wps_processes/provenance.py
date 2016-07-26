@@ -1,7 +1,10 @@
-# CLIPC Provenance
+# 
+# Institute: KNMI
+# Project: CLIPC
+# Module:  Provenance
+# Authors: Andrej M, Alessandro S.
 #
-#
-#   author: Andrej
+
 import os
 
 import json
@@ -137,6 +140,12 @@ def writePOST(provenance_json):
 
 def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
         
+        def formatArtifactDic(dic):
+            for x in dic:
+                if type(dic[x])==list:
+                    dic[x]=str(dic[x])
+            return dic
+
         g = ProvDocument()
         vc = Namespace("knmi", "http://knmi.nl")  # namespaces do not need to be explicitly added to a document
         con = Namespace("con", "http://knmi.nl/control")
@@ -229,7 +238,10 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                     dic.update({vc[x["key"]]: x["val"]})
                 
             dic.update({'prov:type':'parameters'})        
-            bundle.entity(vc["parameters_"+trace["instanceId"]], dic)
+            
+            bundle.entity(vc["parameters_"+trace["instanceId"]], dic )
+            #bundle.entity(vc["parameters_"+trace["instanceId"]], formatArtifactDic(dic) )
+            
             bundle.used(vc['process_'+trace["iterationId"]], vc["parameters_"+trace["instanceId"]], identifier=vc["used_"+trace["iterationId"]])
 
             'adding input dependencies to the document as input entities'
@@ -263,7 +275,7 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                 bundle.wasGeneratedBy(vc[x["id"]], vc["process_"+trace["iterationId"]], identifier=vc["wgb_"+x["id"]])
             
                 for d in trace['derivationIds']:
-                      bundle.wasDerivedFrom(vc[x["id"]], vc[d['DerivedFromDatasetID']],identifier=vc["wdf_"+x["id"]])
+                      bundle.wasDerivedFrom(vc[x["id"]], vc[d['DerivedFromDatasetID']], identifier=vc["wdf_"+x["id"]])
         
                 for y in x["content"]:
                 
@@ -452,7 +464,6 @@ class MetadataD4P(object):
         for k in inputs:
             if "tags" not in k:
                 v = inputs[k].getValue()
-                #prov_input.append( (k+'='+v) )
                 prov_input.append( { 'url' : v , 'mime-type':'application/x-netcdf' , 'name':k } )
                 prov_dict[k] = v
 
@@ -538,6 +549,7 @@ class MetadataD4P(object):
                    oldlin = json.loads(self.output.variables['knmi_provenance'].getncattr('lineage'))
                 except Exception, e:
                    oldlin = []
+
                 try:
                    oldlin.append(json.loads(self.output.variables['knmi_provenance'].getncattr('lineage2')))
                 except Exception, e:
@@ -545,29 +557,21 @@ class MetadataD4P(object):
                    print e
                    #oldlin = []
 
-                #print self.lineage
-                #logger_info("closeProv() AAA")
 
                 oldlin.append(self.lineage)
 
-                # logger_info("closeProv() lineage "+str(self.lineage))
-                # logger_info("closeProv() bundle  "+str(self.bundle))
-                # logger_info("closeProv() oldlin  "+str(oldlin))
-
-
                 self.output.variables['knmi_provenance'].setncattr('lineage', json.dumps(oldlin) )
               
-
-
                 logger_info("closeProv() knmi_provenance var "+str( self.output.variables['knmi_provenance'] ))
-                #logger_info("closeProv() CCC")
 
-                #logger_info("closeProv() "+str(toW3Cprov([self.lineage] , [self.bundle])))
+                try:
+                    self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
+                    #self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov( oldlin, [self.bundle]) )
+                    #self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov( self.lineage , self.bundle) )
+                except Exception, e:
+                     logger_info("closeProv() failed xml generation "+str(e))
+                     self.output.variables['knmi_provenance'].setncattr('prov-dm', str(e) )
 
-                #logger_info("closeProv() DDD")
-
-                self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
-                
                 logger_info("closeProv()  end!!!!!"  )  
                 self.output.close()
                     

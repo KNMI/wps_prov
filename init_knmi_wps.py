@@ -50,6 +50,11 @@ class Combine(wps_knmi.KnmiWpsProcess):
     def __init__(self):
         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiCombineDescriptor())
 
+class NormaliseAdvanced(wps_knmi.KnmiWpsProcess):
+    # KnmiWebProcessDescriptor
+    def __init__(self):
+        wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiNormaliseAdvancedDescriptor())
+
 class AdvancedCombine(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):

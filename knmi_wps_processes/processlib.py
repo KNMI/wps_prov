@@ -328,3 +328,80 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
 
 
   return w_nc_fid
+
+from scipy import stats
+
+def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , target_name):
+  logger_info("normaliseAdvancedNetCDF start.")
+  try:
+      nc_fid = netCDF4.Dataset( source_name , 'r') 
+  except Exception, e:
+      raise e
+ 
+  try:
+    #logger_info("write "+target_name)
+    w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
+    
+    #logger_info("write started "+target_name)
+
+    content = dict()
+
+    for var_name, dimension in nc_fid.dimensions.iteritems():
+        w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+
+    #logger_info("copy var start")    
+    for var_name, ncvar in nc_fid.variables.iteritems():
+        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+      
+        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+
+        outVar.setncatts(  ad  )
+        
+        # astype('f4')
+        if var_name == layer:   
+          try:
+            logger_info("normaliseAdvancedNetCDF nrom.")
+            logger_info("normaliseAdvancedNetCDF min="+str(type(min0)))
+            logger_info("normaliseAdvancedNetCDF max="+str(type(max0)))
+            logger_info("normaliseAdvancedNetCDF cen="+str(type(centre0)))
+            # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
+            
+            #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )
+          
+            #outVar[:] = [ np.nan if a < float(min0) else a for a in ncvar[:] ]
+
+            
+            outVar[:] = stats.threshold(ncvar[:], threshmin=float(min0), threshmax=float(max0), newval=np.nan)
+
+            #outVar[:] = outVar[:] / float(centre0)
+            logger_info("normaliseAdvancedNetCDF norm end.")
+          except Exception, e:
+            logger_info("normaliseAdvancedNetCDF except: "+str(e))
+            raise e   
+        elif var_name != 'knmi_provenance': 
+          outVar[:] = ncvar[:]
+        
+    createKnmiProvVar(w_nc_fid)
+
+    global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+    
+    logger_info("normaliseAdvancedNetCDF norm hist.")
+
+    histStr = "normaliseAdvancedNetCDF knmi: "+target_name+"min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name
+    try:
+      global_vars['history'] = global_vars['history']+"\n"+histStr
+    except Exception, e:
+      global_vars['history'] = histStr
+
+     
+    for k in sorted(global_vars.keys()):
+        v = global_vars[k] 
+        w_nc_fid.setncattr(  k , v )
+
+  except Exception, e:
+    logger_info("exception writing: [%s]",target_name)
+    raise e
+
+ 
+
+  return w_nc_fid

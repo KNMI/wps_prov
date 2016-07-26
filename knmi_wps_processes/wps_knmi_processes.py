@@ -475,6 +475,11 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
         certfile = os.environ['HOME']+'certs/creds.pem'
 
 
+        def logger_info(str1):
+              with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
+                f.write(str(str1)+"\n")
+              f.close()
+
 
         callback(9)
         # validator old                 
@@ -499,6 +504,8 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
             netcdf_w = netCDF4.Dataset( target , 'a')
 
             processlib.createKnmiProvVar(netcdf_w)
+
+            logger_info("wcs! process_execute_function: append file=\n"+str(netcdf_w))
 
             # for k in netcdf_w.ncattrs():
             #   v = netcdf_w.getncattr(k)
@@ -608,15 +615,6 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
 
 
-
-
-
-
-
-
-
-
-
 '''
 operations possible 
 '''
@@ -707,7 +705,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source1" , 
                             "title"      : "Combine input: Source 1 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_JAN_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"
                             } ,
@@ -892,6 +890,57 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             raise "Error exception in operator"
 
 
+        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWcsDescriptor())
+
+        # use parent path...
+        knmiprocess.fileOutPath1 = fileOutPath
+        #inputs['']
+
+        # fileOutPath
+        ''' WCS '''
+        #logger_info("process_execute_function: start")
+        try:
+            
+            #logger_info(knmiprocess.fileOutPath1)
+                            # "identifier" : "netcdf_source" , 
+                            # "identifier" : "bbox" , 
+                            # "identifier" : "time" , 
+                            # "identifier" : "netcdf_target" , 
+                            # "identifier" : "width" , 
+                            # "identifier" : "height" , 
+                            # "identifier" : "tags" , 
+  
+            #logger_info("process_execute_function: 1")
+            knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source1'].getValue() })
+            knmiprocess.inputs['bbox'].setValue(            {'value' : inputs['bbox'].getValue() } )
+            knmiprocess.inputs['time'].setValue(            {'value' : inputs['time1'].getValue() } )
+            knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_WCS1.nc'} )
+            knmiprocess.inputs['width'].setValue(           {'value' : inputs['width'].getValue() } )
+            knmiprocess.inputs['height'].setValue(          {'value' : inputs['height'].getValue() } )
+            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
+
+            knmiprocess.status = self.process.status
+            knmiprocess.execute()
+
+            #logger_info("process_execute_function: 2")
+            knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source2'].getValue()})
+            knmiprocess.inputs['bbox'].setValue(            {'value' : inputs['bbox'].getValue() } )
+            knmiprocess.inputs['time'].setValue(            {'value' : inputs['time2'].getValue() } )
+            knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_WCS2.nc'} )
+            knmiprocess.inputs['width'].setValue(           {'value' : inputs['width'].getValue() } )
+            knmiprocess.inputs['height'].setValue(          {'value' : inputs['height'].getValue() } )
+            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
+
+            knmiprocess.status = self.process.status
+            knmiprocess.execute()
+
+        except Exception, e:
+            #logger_info(str(e))
+            traceback.print_exc(file=sys.stderr)
+            raise e
+
+
+        ''' NORMALISE '''
         knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
 
         # use parent path...
@@ -899,15 +948,15 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         #inputs['']
 
         # fileOutPath
-        ''' NORMALISE '''
+       
         #logger_info("process_execute_function: start")
         try:
             
             #logger_info(knmiprocess.fileOutPath1)
   
             #logger_info("process_execute_function: 1")
-            knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source1'].getValue() })
-            knmiprocess.inputs['netcdf_target'].setValue(   {'value' :'COPY_NORM1.nc'} )
+            knmiprocess.inputs['netcdf_source'].setValue(   {'value' : knmiprocess.fileOutPath1+'COPY_WCS1.nc' })
+            knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_NORM1.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm1'].getValue() } )
             knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable1'].getValue() } )
             knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
@@ -916,31 +965,31 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.execute()
 
             #logger_info("process_execute_function: 2")
-            knmiprocess.inputs['netcdf_source'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_NORM1.nc'})
-            knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_WEIGHT1.nc'} )
-            knmiprocess.inputs['weight'].setValue( {'value' : inputs['weight1'].getValue() } )
-            knmiprocess.inputs['variable'].setValue( {'value' : inputs['variable1'].getValue()} )
-            knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
+            knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_NORM1.nc'})
+            knmiprocess.inputs['netcdf_target'].setValue(   {'value': 'COPY_WEIGHT1.nc'} )
+            knmiprocess.inputs['weight'].setValue(          {'value': inputs['weight1'].getValue() } )
+            knmiprocess.inputs['variable'].setValue(        {'value': inputs['variable1'].getValue()} )
+            knmiprocess.inputs['tags'].setValue(            {'value': inputs['tags'].getValue() } )
 
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
             #logger_info("process_execute_function: 3")
-            knmiprocess.inputs['netcdf_source'].setValue( {'value':inputs['netcdf_source2'].getValue()})
-            knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_NORM2.nc'} )
-            knmiprocess.inputs['weight'].setValue(   {'value' : inputs['norm2'].getValue() } )
-            knmiprocess.inputs['variable'].setValue( {'value' : inputs['variable2'].getValue() } )
-            knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
+            knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_WCS2.nc'})
+            knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_NORM2.nc'} )
+            knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm2'].getValue() } )
+            knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable2'].getValue() } )
+            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
             #logger_info("process_execute_function: 4")
-            knmiprocess.inputs['netcdf_source'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_NORM2.nc'})
-            knmiprocess.inputs['netcdf_target'].setValue( {'value':'COPY_WEIGHT2.nc'} )
-            knmiprocess.inputs['weight'].setValue(   {'value' : inputs['weight2'].getValue() } )
-            knmiprocess.inputs['variable'].setValue( {'value' : inputs['variable2'].getValue() } )
-            knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
+            knmiprocess.inputs['netcdf_source'].setValue(   {'value':knmiprocess.fileOutPath1+'COPY_NORM2.nc'})
+            knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_WEIGHT2.nc'} )
+            knmiprocess.inputs['weight'].setValue(          {'value' : inputs['weight2'].getValue() } )
+            knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable2'].getValue() } )
+            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
             knmiprocess.status = self.process.status
             knmiprocess.execute()
@@ -985,7 +1034,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             processlib.createKnmiProvVar(netcdf_w)
 
 
-            logger_info(netcdf_w)
+            #logger_info(netcdf_w)
             callback(44)
             #content of prov... move...
             for k in netcdf_w.ncattrs():
@@ -995,8 +1044,8 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            logger_info(netcdf_w)
-            logger_info(content1)
+            #logger_info(netcdf_w)
+            #logger_info(content1)
 
             raise e
         
@@ -1055,7 +1104,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source2" , 
                             "title"      : "Combine input: Source 2 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_JAN_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"
                             } ,
@@ -1095,8 +1144,172 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
                             "values"     : ["add","subtract","multiply","divide", "equal", "less" , "greater"]
                             } , 
                             { 
+                            "identifier" : "bbox" , 
+                            "title"      : "Copy input: BBOX of WCS slice." ,
+                            "type"       : type("String"),
+                            "default"    : "-40,20,60,85" ,
+                            "values"     : None,
+                            "maxOccurs"  : 4
+                            } ,
+                            { 
+                            "identifier" : "width" , 
+                            "title"      : "Copy input: width of WCS slice." ,
+                            "type"       : type("String"),
+                            "default"    : '200' ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "height" , 
+                            "title"      : "Copy input: height of WCS slice." ,
+                            "type"       : type("String"),
+                            "default"    : '200' ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "time1" , 
+                            "title"      : "Copy input: Time of WCS slice 1." ,
+                            "type"       : type("String"),
+                            "default"    : "2010-09-16T00:00:00Z" ,
+                            "values"     : None
+                            },
+                            { 
+                            "identifier" : "time2" , 
+                            "title"      : "Copy input: Time of WCS slice 2." ,
+                            "type"       : type("String"),
+                            "default"    : "2010-01-16T00:00:00Z" ,
+                            "values"     : None
+                            },
+                            { 
                             "identifier" : "tags" , 
                             "title"      : "Combine input: User Defined Tags CLIPC user tags." ,
+                            "type"       : type("String"),
+                            "default"    : "knmi_prov_research",
+                            "values"     : None
+                            }                   
+                          ]
+
+
+        self.processExecuteCallback = self.process_execute_function
+
+        print self
+
+class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
+
+    # KnmiNormaliseAdvancedDescriptor
+
+    # override with validation process
+    def process_execute_function(self , inputs, callback,fileOutPath):
+        
+        # def #logger_info(str1):
+        #   with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
+        #     f.write(str(str1)+"\n")
+        #   f.close()
+
+        ##logger_info("doit! process_execute_function")
+
+        callback(1)
+
+        pprint(inputs) 
+
+        content1 = {}
+
+        source1 = [inputs['netcdf_source'].getValue()]
+
+        try:
+
+            ##logger_info("doit! process_execute_function start weightNetCDF")
+            netcdf_w = processlib.normaliseAdvancedNetCDF( inputs['netcdf_source'].getValue()     ,
+                                                inputs['min'].getValue()            ,
+                                                inputs['max'].getValue()            ,
+                                                inputs['centre'].getValue()            ,
+                                                inputs['variable'].getValue()          ,
+                                                fileOutPath+inputs['netcdf_target'].getValue() )   
+
+            ##logger_info("doit! process_execute_function start weightNetCDF DONE")
+            #prov.output = netcdf_w
+            #print netcdf_w
+
+            #content of prov... move...
+            for k in netcdf_w.ncattrs():
+              v = netcdf_w.getncattr(k)
+              if k not in ["bundle","lineage"]:
+                content1[str(k).replace(".","_")] = str(v) 
+
+        except Exception, e:
+            ##logger_info("doit! process_execute_function start weightNetCDF Exceptions!!!!!" )
+            content1 = {"copy_error": str(e) } 
+            pprint (netcdf_w)
+            pprint (content1)
+
+            raise e
+
+        #prov.content.append(content1)
+        return content1 , source1, netcdf_w
+
+
+
+    def __init__( self ):
+
+        self.structure = {}      
+        self.inputsTuple = []
+
+        self.structure["identifier"] = "knmi_norm_adv"   # = 'wps_simple_indice', # only mandatary attribute = same file name
+        self.structure["title"]= "Normalise with min, max and centre netcdf" # = 'SimpleIndices',
+        self.structure["abstract"] = "KNMI WPS Process: CLIPC Normalise Advanced." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["version"] = "1.0.0"
+        self.structure["storeSupported"] = True
+        self.structure["statusSupported"] = True
+        self.structure["grassLocation"] = False
+        self.structure["metadata"] = "METADATA D4P"
+
+        # input tuple describes addLiteralInput, values
+        self.inputsTuple = [
+                            { 
+                            "identifier" : "netcdf_source" , 
+                            "title"      : "Copy input: Input netCDF opendap." ,
+                            "type"       : type("String"),
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "abstract"   : "application/netcdf",
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "min" , 
+                            "title"      : "Copy input: a min of netCDF input.",
+                            "type"       : type(float),
+                            "default"    : "0.0" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "max" , 
+                            "title"      : "Copy input: a max of netCDF input.",
+                            "type"       : type(float),
+                            "default"    : "2.0" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "centre" , 
+                            "title"      : "Copy input: a centre of netCDF input.",
+                            "type"       : type(float),
+                            "default"    : "1.0" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "variable" , 
+                            "title"      : "Copy input: VariableName of netCDF layer." ,
+                            "type"       : type("String"),
+                            "default"    : "vDTR" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "netcdf_target" , 
+                            "title"      : "Copy input: Output netCDF." ,
+                            "type"       : type("String"),
+                            "default"    : "NORMADV.nc",
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "tags" , 
+                            "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
                             "default"    : "knmi_prov_research",
                             "values"     : None
