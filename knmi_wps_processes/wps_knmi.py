@@ -18,7 +18,7 @@ import os
 from datetime import datetime
 import provenance
 from pprint import pprint
-
+import sys, traceback #traceback.print_exc(file=sys.stdout)
 import netCDF4
 #import provexport
 
@@ -90,6 +90,10 @@ class KnmiWpsProcess(WPSProcess):
     # descirbes WPS
     def __init__(self,descriptor):
         self.fileOutPath1 = None
+
+        self.bundle = None
+
+        self.output = None
 
         WPSProcess.__init__(self,
                             identifier      = descriptor.structure["identifier"], 
@@ -185,30 +189,40 @@ class KnmiWpsProcess(WPSProcess):
         # use prov call back later... each start creates lineage info
         prov = provenance.MetadataD4P(  name=self.identifier , 
                                         description="Povenance using D4P for "+self.abstract ,
-                                        username="andrej" ) #does wps provide a user id...
+                                        username="andrej", 
+                                        inputs=self.inputs ,
+                                        bundle0=self.bundle 
+                                        ) #does wps provide a user id...
         
-
+        self.bundle = prov.bundle
         # MOVED IN PROCESS CAUSES DEPENDACNY... for demo...
-        prov.start( self.inputs ) # use prov call back later... each start creates lineage info
+        #prov.start( self.inputs ) # use prov call back later... each start creates lineage info
         self.callback("Start wps.", 3)
 
+        #with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f2:
         try:
+            self.callback("Start wps.", 4)
+
             content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
 
             self.netcdf_w = fileO
 
-            self.callback("Finished wps."+str(fileO), 70)
+            if fileO is not None:
+                self.callback("Finished wps."+str(fileO), 70)
 
         except Exception, e:
             prov.errors(str(e))
+
+            traceback.print_exc(file=sys.stderr)
             raise e
 
-        self.callback("Finished content.", 80)
+        callback(80)
+
         prov.content = content     
 
-        self.callback("fileO:"+str(type(fileO)), 90)
+        callback(90)
 
-        prov.output = fileO   
+        prov.output = fileO  
         
         ''' ??? provenance related can be moved'''
         try:
@@ -218,10 +232,11 @@ class KnmiWpsProcess(WPSProcess):
      
 
         ''' adds knmi_prov '''
-        prov.finish( self.descriptor.structure , source , outputurl )  
+        prov.finish( source , outputurl )  
+
         prov.closeProv()
 
-        self.outputurl.setValue(self.fileOutPath1+outputurl)
+        self.opendapURL.setValue(self.fileOutPath1+outputurl)
 
         ''' output to local json '''
         prov.writeMetadata('bundle.json')

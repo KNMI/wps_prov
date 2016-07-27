@@ -193,7 +193,9 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                         else:
                             dic.update({vc[key]: y[key]})
                     dic.update({'prov:type': 'worklfow_input'})
-                    bundle.entity(vc[trace["_id"]+"_"+str(i)], dic)
+
+                    #bundle.entity(vc[trace["_id"]+"_"+str(i)], dic )
+                    bundle.entity(vc[trace["_id"]+"_"+str(i)], formatArtifactDic(dic) )
                     bundle.used(vc[trace["_id"]], vc[trace["_id"]+"_"+str(i)], identifier=vc["used_"+trace["_id"]+"_"+str(i)])
                     i=i+1
                     
@@ -259,7 +261,6 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                 parent_dic={}
                 for key in x:
                         if key=='con:immediateAccess':
-                            
                             parent_dic.update({vc['immediateAccess']: x[key]}) 
                         elif key=='location':
                             parent_dic.update({"prov:location": str(x[key])})
@@ -337,31 +338,62 @@ class MetadataD4P(object):
     #  u'workflowId': u'xx',
     #  u'workflowName': u'test_rdwd'}
 
-    def __init__(self, name , description, username ):
+    def __init__(self, name , description, username , inputs, bundle0):
 
-        #create bundle with new MetadataDP, replace with real D4P soon...
-        self.bundle ={}
         self.lineage={}
-        self.content=[]
-        self.process_id = 1
-        self.output = None
-        
-        # create new bundle
-        self.bundle['name'] = name 
-        
-        id_new = "RDWD_"+name +"-"+ str(uuid.uuid4())
-        self.bundle['_id'] = id_new #'RDWD_orfeus-as-85724-d140e70c-0222-11e6-92ad-f45c89acf865',
-        self.bundle['description'] = description #'',
-        self.bundle['input'] = [] # may need to be tupple [] parameters of wps service...
-        self.bundle['mapping'] = 'simple'
-        self.bundle['runId'] = id_new #'RDWD_orfeus-as-85724-d140e70c-0222-11e6-92ad-f45c89acf865',
-        self.bundle['startTime'] = str(datetime.datetime.utcnow()) #'2016-04-14 09:25:24.422633',
-        #self.bundle['system_id'] = None,
-        self.bundle['type'] = 'workflow_run'
-        self.bundle['username'] = username #'aspinuso',
-        #self.bundle['workflowId'] = "xyz" #'xx',
-        self.bundle['workflowName'] = 'test_knmi_wps'
-        self.bundle['tag'] = 'clipc,d4py' #url 
+
+        if bundle0 is None:
+            # create new bundle
+            #create bundle with new MetadataDP, replace with real D4P soon...
+            self.bundle ={}  
+            self.content=[]
+            self.process_id = 1
+            self.output = None
+            
+            # create new bundle
+            self.bundle['name'] = name 
+            
+            id_new = "RDWD_"+name +"-"+ str(uuid.uuid4())
+            self.bundle['_id'] = id_new #'RDWD_orfeus-as-85724-d140e70c-0222-11e6-92ad-f45c89acf865',
+            self.bundle['description'] = description #'',
+            self.bundle['input'] = [] # may need to be tupple [] parameters of wps service...
+            self.bundle['mapping'] = 'simple'
+            self.bundle['runId'] = id_new #'RDWD_orfeus-as-85724-d140e70c-0222-11e6-92ad-f45c89acf865',
+            self.bundle['startTime'] = str(datetime.datetime.utcnow()) #'2016-04-14 09:25:24.422633',
+            #self.bundle['system_id'] = None,
+            self.bundle['type'] = 'workflow_run'
+            self.bundle['username'] = username #'aspinuso',
+            #self.bundle['workflowId'] = "xyz" #'xx',
+            self.bundle['workflowName'] = 'test_knmi_wps'
+            self.bundle['tag'] = 'clipc,d4py' #url 
+
+            memfile = StringIO.StringIO(inputs['tags'].getValue())
+            self.bundle['tags'] = csv.reader(memfile).next()
+
+            prov_input = []
+            for k in inputs:
+                if "tags" not in k:
+                    v = inputs[k].getValue()
+                    prov_input.append( { 'url' : v , 'mime-type':'application/x-netcdf' , 'name':k } )
+
+            self.bundle['input'] = prov_input
+        else:
+            #bundle already exists.
+            self.bundle = bundle0
+
+        '''binds all elements together'''
+        runId = self.bundle['runId']
+
+        prov_dict   = {}
+        for k in inputs:
+            if "tags" not in k:
+                v = inputs[k].getValue()
+                prov_dict[str(k)] = str(v)
+
+
+        self.createLineage(runId , name , prov_dict )
+
+
 
 
     # def __init__(self,id_existing):
@@ -450,30 +482,10 @@ class MetadataD4P(object):
         self.lineage['username'] = self.bundle['username'] #'clipc_knmi'
         self.lineage['worker'] = hostname
 
-
-
-    def start(self, inputs):
-        runId = self.bundle['_id']
-        name  = self.bundle['name']
-
-        memfile = StringIO.StringIO(inputs['tags'].getValue())
-        self.bundle['tags'] = csv.reader(memfile).next()
-
-        prov_input = []
-        prov_dict = {}
-        for k in inputs:
-            if "tags" not in k:
-                v = inputs[k].getValue()
-                prov_input.append( { 'url' : v , 'mime-type':'application/x-netcdf' , 'name':k } )
-                prov_dict[k] = v
-
-        self.bundle['input'] = prov_input
-
-        self.createLineage(runId , name , prov_dict )
   
-    def finish(self,data_input,nclinkOfSource,outputurl):
+    def finish(self,nclinkOfSource,outputurl):
         #bundle update
-        list(self.bundle['input']).append(data_input)
+        #list(self.bundle['input']).append(data_input)
 
         try:
             nclinkOfSource = [ self.output.getncattr('uuid') ]
@@ -510,14 +522,12 @@ class MetadataD4P(object):
         self.lineage['errors'] = error
 
     def writeMetadata(self,file_directory):
-        #pprint(self.bundle)
-        #pprint(self.lineage)
-
         writeJSON(file_directory,self.bundle)
         writeJSON(file_directory,self.lineage)
 
         writePOST(self.bundle)
         writePOST(self.lineage)
+
 
 
 
@@ -548,12 +558,12 @@ class MetadataD4P(object):
                 try:
                     self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
                 except Exception, e:
-                     self.output.variables['knmi_provenance'].setncattr('prov-dm', str(e) )
+                    self.output.variables['knmi_provenance'].setncattr('prov-dm', str(e) )
+                
                 self.output.close()
-                    
 
             except Exception, e:
                 traceback.print_exc(file=sys.stdout)
                 raise e
-
+                
         print "end prov."

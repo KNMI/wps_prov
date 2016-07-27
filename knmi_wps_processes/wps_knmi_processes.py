@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 import os
 import sys, traceback
+import wps_knmi
 
 #from clipcombine.clipc_combine_process import clipc_combine_process
 # run from run.wps.here.py (this allows the local cgi to be used...)
@@ -91,7 +92,7 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }              
                           ]
@@ -173,7 +174,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }                   
                           ]
@@ -276,7 +277,7 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }                   
                           ]
@@ -495,7 +496,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }                   
                           ]
@@ -645,7 +646,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Combine input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }                   
                           ]
@@ -654,116 +655,16 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
         self.processExecuteCallback = self.process_execute_function
 
         print self
-# class Process(WPSProcess):
-#     def __init__(self):
-#         # init process
-#         WPSProcess.__init__(self,
-#                             identifier="clipc_combine_identify", #the same as the file name
-#                             title="CLIPC Combine Identify",
-#                             version = "1.0",
-#                             storeSupported = "true",
-#                             statusSupported = "true",
-#                           abstract="Lists possible operations for two resources",
-#                           grassLocation =False)
-        
-#         self.inputa = self.addLiteralInput(identifier="inputa",
-#                                                 title="Input 1",
-#                                                 abstract="application/netcdf",
-#                                                 default = "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/tier1_indicators/icclim_cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp45_r1i1p1_SMHI-RCA4_v1-SMHI-DBS43-MESAN-1989-2010/vDTR_OCT_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_SMHI-RCA4_v1-SMHI-DBS43-MESAN-1989-2010_EUR-11_2006-2100.nc",
-#                                                 type = type("String"))   
-#         self.inputb = self.addLiteralInput(identifier="inputb",
-#                                                 title="Input 2",
-#                                                 abstract="application/netcdf",
-#                                                 default = "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/tier1_indicators/icclim_cerfacs/TNn/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/TNn_OCT_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc",
-#                                                 type = type("String"))   
-       
-        
-#         self.result = self.addLiteralOutput(identifier = "result",title = "answer");
-
-    
-#     def execute(self):
-        
-#         self.result.setValue("add,substract,divide,multiply");
-#         self.status.set("Finished....", 100)      
-
-# generic...
-# class KnmiWebProcessDescriptor(object):
-# class KnmiCombineIdentify( KnmiWebProcessDescriptor ):
-
-
-#     # override with validation process
-#     def process_execute_function(self , inputs, callback):
-
-#         callback("process_execute_function combine identify")
-
-#         # #pprint(inputs) 
-#         answer = "add,substract,divide,multiply"
-
-#         # NOT COMPLETE IN IMPACTPORTAL VERSION....???
-
-#         #content1 = {"content": str(clipc_combine_process.ops) }
-#         content1 = {"content": "clipc_combine_process.ops" }
-#         source1  = {}
-#         for k in inputs.keys():
-#             source1.append( { str(k) : inputs[k].getValue() } )
-
-#         self.result.setValue( answer );
-#         self.status.set("Finished.", 100)   
-
-#         # nc1 , nc2 , nc_combo = clipc_combine_process.combine_two_indecies_wcs(wcs_url1, wcs_url2, op , norm1 , norm2 , bbox , time1 , time2 , tmpFolderPath+'/wcs_nc1.nc' , tmpFolderPath+'/wcs_nc2.nc', fileOutPath+"/"+outputfile,width=width , height=height, callback=callback ,certfile=certfile)
-
-
-#         # #The final answer    
-#         # url = fileOutURL+"/"+outputfile;
-#         # self.result.setValue(url);
-#         # self.status.set("Finished....", 100)      
- 
-
-#         return content1 , source1, None
 
 
 
-#     def __init__( self ):
-#         self.structure = {}      
-#         self.inputsTuple = []
 
-#         self.structure["identifier"] = "clipc_combine_identify"
-#         self.structure["title"]= "CLIPC Combine Identify"
-#         self.structure["abstract"] = "KNMI WPS Process: [CLIPC] Lists possible operations for two resources"
-#         self.structure["version"] = "1.1"
-#         self.structure["storeSupported"] = True
-#         self.structure["statusSupported"] = True
-#         self.structure["grassLocation"] = False
-#         self.structure["metadata"] = "METADATA D4P" 
-       
-        
-#         self.result = self.addLiteralOutput(identifier = "result",title = "answer")
+# def logger_info(str1):
+#       with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
+#         f.write(str(str1)+"\n")
+#       f.close()
 
-#         # input tuple describes addLiteralInput, values
-#         self.inputsTuple = [
-#                             { 
-#                             "identifier" : "inputa" , 
-#                             "title"      : "Input 1" ,
-#                             "abstract"   : "application/netcdf",
-#                             "type"       : "String",
-#                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/tier1_indicators/icclim_cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp45_r1i1p1_SMHI-RCA4_v1-SMHI-DBS43-MESAN-1989-2010/vDTR_OCT_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_SMHI-RCA4_v1-SMHI-DBS43-MESAN-1989-2010_EUR-11_2006-2100.nc",
-#                             "values"     : None
-#                             } ,
-#                             { 
-#                             "identifier" : "inputb" , 
-#                             "title"      : "Input 2" ,
-#                             "abstract"   : "application/netcdf",
-#                             "type"       : "String",
-#                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/tier1_indicators/icclim_cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp45_r1i1p1_SMHI-RCA4_v1-SMHI-DBS43-MESAN-1989-2010/vDTR_NOV_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_SMHI-RCA4_v1-SMHI-DBS43-MESAN-1989-2010_EUR-11_2006-2100.nc",
-#                             "values"     : None
-#                             }                  
-#                           ]
-
-
-#         self.processExecuteCallback = self.process_execute_function
-
-import wps_knmi
-
+        #logger_info("doit! process_execute_function")
 
 class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
@@ -783,9 +684,8 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         except Exception ,e:
             raise "Error exception in operator"
 
-
         knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWcsDescriptor())
-
+        knmiprocess.bundle = self.process.bundle
         # use parent path...
         knmiprocess.fileOutPath1 = fileOutPath
         #inputs['']
@@ -822,7 +722,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         ''' NORMALISE '''
         knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
-
+        knmiprocess.bundle = self.process.bundle
         # use parent path...
         knmiprocess.fileOutPath1 = fileOutPath
 
@@ -864,9 +764,10 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.execute()
 
             callback(30)
+
             ''' COMBINE '''
             knmiprocess = wps_knmi.KnmiWpsProcess(KnmiCombineDescriptor())
-
+            knmiprocess.bundle = self.process.bundle
             # use parent path...
             knmiprocess.fileOutPath1 = fileOutPath
 
@@ -890,9 +791,22 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             raise e
 
         callback(40)    
+
+        # def logger_info(str1):
+        #     with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
+        #         f.write(str(str1)+"\n")
+        #     f.close()
+            
+
+        #logger_info("wps_knmi output_file!")
+
         
         try:
-            netcdf_w = knmiprocess.netcdf_w
+            target = fileOutPath+knmiprocess.inputs['netcdf_target'].getValue()
+
+            #content of prov... move...
+            netcdf_w = netCDF4.Dataset( target , 'a')
+
 
             processlib.createKnmiProvVar(netcdf_w)
 
@@ -907,9 +821,11 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         except Exception, e:
             content1 = {"copy_error": str(e) } 
 
+            traceback.print_exc(file='/nobackup/users/mihajlov/impactp/tmp/server.log') #sys.stderr)
+
             raise e
         
-        callback(99)    
+        callback(90)    
 
         #prov.content.append(content1)
         return content1 , source1, netcdf_w
@@ -1043,7 +959,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Combine input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }                   
                           ]
@@ -1158,7 +1074,7 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "tags" , 
                             "title"      : "Copy input: User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
-                            "default"    : "knmi_prov_research",
+                            "default"    : "provenance_research_knmi",
                             "values"     : None
                             }                   
                           ]

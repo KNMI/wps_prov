@@ -48,7 +48,7 @@ def testMetadata(ncattributes, files):
             checkVariable(nc_fid,v,answer,count)
 
     # print "variables failed = " , count
-        #nc_fid.close()
+        nc_fid.close()
 
     for a in nc_fid.ncattrs():
         # content[a] = str(nc_fid.getncattr(a))
@@ -56,35 +56,6 @@ def testMetadata(ncattributes, files):
 
     return answer,content
 
-
-
-
-# def copyNetCDF(name, nc_fid , des ):
-#   w_nc_fid = netCDF4.Dataset(name, 'w', format='NETCDF4')
-
-#   #PROVENANCE ADDED!!!!
-
-#   w_nc_fid.description = des
-
-#   for var_name, dimension in nc_fid.dimensions.iteritems():
-#     w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
-
-#   for var_name, ncvar in nc_fid.variables.iteritems():
-
-#     outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions )
-  
-#     ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
-
-#     outVar.setncatts(  ad  )
-
-#     outVar[:] = ncvar[:]
-
-#   global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
-  
-#   for k in sorted(global_vars.keys()):
-#     w_nc_fid.setncattr(  k , global_vars[k]  )
-
-#   return w_nc_fid
 
 def createKnmiProvVar(w_nc_fid):
   try:
@@ -157,10 +128,13 @@ def copyNetCDF( source_name , target_name):
       print "exception writing: ",target_name
       raise e
 
+    nc_fid.close()  
+
   except Exception, e:
     print "exception reading: ",source_name
     raise e
 
+  
 
   return w_nc_fid
 
@@ -231,10 +205,10 @@ def weightNetCDF( source_name , weight , layer , target_name):
         v = global_vars[k] 
         w_nc_fid.setncattr(  k , v )
 
+    nc_fid.close()
+
   except Exception, e:
     raise e
-
- 
 
   return w_nc_fid
 
@@ -305,9 +279,11 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
       except Exception, e:
         raise e
 
+      nc_fid1.close()
+      nc_fid2.close()
+
   except Exception, e:
     raise e
-
 
   return w_nc_fid
 
@@ -369,9 +345,9 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
         v = global_vars[k] 
         w_nc_fid.setncattr(  k , v )
 
+    nc_fid.close()
+
   except Exception, e:
     raise e
-
- 
 
   return w_nc_fid
