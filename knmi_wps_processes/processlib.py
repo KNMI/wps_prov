@@ -361,19 +361,18 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
         if var_name == layer:   
           try:
             logger_info("normaliseAdvancedNetCDF nrom.")
-            logger_info("normaliseAdvancedNetCDF min="+str(type(min0)))
-            logger_info("normaliseAdvancedNetCDF max="+str(type(max0)))
-            logger_info("normaliseAdvancedNetCDF cen="+str(type(centre0)))
+            logger_info("normaliseAdvancedNetCDF min="+str((min0)))
+            logger_info("normaliseAdvancedNetCDF max="+str((max0)))
+            logger_info("normaliseAdvancedNetCDF cen="+str((centre0)))
             # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
             
-            #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )
-          
-            #outVar[:] = [ np.nan if a < float(min0) else a for a in ncvar[:] ]
-
+            #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )# does not set other value...    
+            #outVar[:] = [ np.nan if a < float(min0) else a for a in ncvar[:] ] # for array need matrix option
             
+            # keep mid values
             outVar[:] = stats.threshold(ncvar[:], threshmin=float(min0), threshmax=float(max0), newval=np.nan)
 
-            #outVar[:] = outVar[:] / float(centre0)
+            outVar[:] = outVar[:] / float(centre0)
             logger_info("normaliseAdvancedNetCDF norm end.")
           except Exception, e:
             logger_info("normaliseAdvancedNetCDF except: "+str(e))
