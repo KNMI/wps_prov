@@ -138,6 +138,8 @@ class KnmiWpsProcess(WPSProcess):
 
         self.processExecuteCallback = descriptor.processExecuteCallback
 
+        self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL"); 
+
     # logging using pywps status module   
     def callback(self,message,percentage):
         self.status.set("%s" % str(message),str(percentage));
@@ -170,14 +172,14 @@ class KnmiWpsProcess(WPSProcess):
         # else nothing        
 
         #self.callback(fileOutURL,10)
-        self.callback(self.fileOutPath1,11)    
+        self.callback(self.fileOutPath1,1)    
         # this can be extended for better debug...
         def callback(b):
             self.callback("Processing wps_knmi ",b)
 
         # PE used is dispel4py should be here
         # currently    
-        self.callback("KnmiWpsProcess", 12)
+        self.callback("KnmiWpsProcess", 2)
 
         # bundle created here
         # use prov call back later... each start creates lineage info
@@ -188,23 +190,23 @@ class KnmiWpsProcess(WPSProcess):
 
         # MOVED IN PROCESS CAUSES DEPENDACNY... for demo...
         prov.start( self.inputs ) # use prov call back later... each start creates lineage info
-        self.callback("Start wps.", 13)
+        self.callback("Start wps.", 3)
 
         try:
             content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
 
             self.netcdf_w = fileO
 
-            self.callback("Finished wps."+str(fileO), 92)
+            self.callback("Finished wps."+str(fileO), 70)
 
         except Exception, e:
             prov.errors(str(e))
             raise e
-            
-        self.callback("Finished content.", 93)
+
+        self.callback("Finished content.", 80)
         prov.content = content     
 
-        self.callback("fileO:"+str(type(fileO)), 94)
+        self.callback("fileO:"+str(type(fileO)), 90)
 
         prov.output = fileO   
         
@@ -218,6 +220,8 @@ class KnmiWpsProcess(WPSProcess):
         ''' adds knmi_prov '''
         prov.finish( self.descriptor.structure , source , outputurl )  
         prov.closeProv()
+
+        self.outputurl.setValue(self.fileOutPath1+outputurl)
 
         ''' output to local json '''
         prov.writeMetadata('bundle.json')
