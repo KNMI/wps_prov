@@ -4,7 +4,7 @@ import netCDF4
 import json
 from pprint import pprint
 import numpy as np
-import clipc_wp8_norm as cn
+from clipc_combine_process import clipc_wp8_norm as cn
 import logging
 
 
@@ -15,10 +15,10 @@ import logging
 # logger.addHandler(fh)
 
 
-def logger_info(str1):
-  with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-    f.write(str(str1)+"\n")
-  f.close()
+# def logger_info(str1):
+#   with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
+#     f.write(str(str1)+"\n")
+#   f.close()
 
 # logger_info("doit!")
 
@@ -169,28 +169,21 @@ def copyNetCDF( source_name , target_name):
 
 def weightNetCDF( source_name , weight , layer , target_name):
 
-  #logger_info("weightNetCDF read "+source_name)    
-
+  ''' weighted netcdf function, allows normalistaion and weight '''
   try:
       nc_fid = netCDF4.Dataset( source_name , 'r') 
   except Exception, e:
-    #logger_info( "exception reading: "+source_name )
     raise e
 
-      #print "read worked"
-  #logger_info("read done "+source_name)    
   try:
-    #logger_info("write "+target_name)
     w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
-    
-    #logger_info("write started "+target_name)
 
     content = dict()
 
     for var_name, dimension in nc_fid.dimensions.iteritems():
         w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
 
-    #logger_info("copy var start")    
+
     for var_name, ncvar in nc_fid.variables.iteritems():
         outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
       
@@ -201,15 +194,11 @@ def weightNetCDF( source_name , weight , layer , target_name):
         # astype('f4')
         if var_name == layer:   
           try:
-            #logger_info("w:"+weight)               
-            #logger_info(type(weight))
-
             if weight in cn.nrm.keys():
               outVar[:] = cn.norm(ncvar[:],weight)
             else:  
               outVar[:] = float(weight) * ncvar[:]
           except Exception, e:
-            #logger_info(e)
             raise e
         elif var_name != 'knmi_provenance': 
           outVar[:] = ncvar[:]
@@ -243,7 +232,6 @@ def weightNetCDF( source_name , weight , layer , target_name):
         w_nc_fid.setncattr(  k , v )
 
   except Exception, e:
-    logger_info("exception writing: [%s]",target_name)
     raise e
 
  
@@ -297,8 +285,6 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
         except Exception, e:
           global_vars['history'] = histStr
 
-        #logger_info("error>>>>>>>>>>>>: [%s]",str(w_nc_fid)) 
-
         try:
           for k in sorted(global_vars.keys()):
               v = global_vars[k] 
@@ -315,15 +301,11 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
                 w_nc_fid.setncattr(  k+"2" , v )
 
         except Exception, e:
-          #logger_info( "Exception: ncattrs not added in combine")
           raise e
       except Exception, e:
-        #logger_info( "Exception: "+target_name)
         raise e
 
   except Exception, e:
-    #logger_info( "Exception: "+source_name1)
-    #logger_info( "Exception: "+source_name2)
     raise e
 
 
@@ -332,24 +314,21 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
 from scipy import stats
 
 def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , target_name):
-  logger_info("normaliseAdvancedNetCDF start.")
+
+  ''' advanced normalistaion, tudo request. '''
   try:
       nc_fid = netCDF4.Dataset( source_name , 'r') 
   except Exception, e:
       raise e
  
   try:
-    #logger_info("write "+target_name)
     w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
     
-    #logger_info("write started "+target_name)
-
     content = dict()
 
     for var_name, dimension in nc_fid.dimensions.iteritems():
         w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
-
-    #logger_info("copy var start")    
+ 
     for var_name, ncvar in nc_fid.variables.iteritems():
         outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
       
@@ -360,10 +339,6 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
         # astype('f4')
         if var_name == layer:   
           try:
-            logger_info("normaliseAdvancedNetCDF nrom.")
-            logger_info("normaliseAdvancedNetCDF min="+str((min0)))
-            logger_info("normaliseAdvancedNetCDF max="+str((max0)))
-            logger_info("normaliseAdvancedNetCDF cen="+str((centre0)))
             # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
             
             #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )# does not set other value...    
@@ -373,9 +348,7 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
             outVar[:] = stats.threshold(ncvar[:], threshmin=float(min0), threshmax=float(max0), newval=np.nan)
 
             outVar[:] = outVar[:] / float(centre0)
-            logger_info("normaliseAdvancedNetCDF norm end.")
           except Exception, e:
-            logger_info("normaliseAdvancedNetCDF except: "+str(e))
             raise e   
         elif var_name != 'knmi_provenance': 
           outVar[:] = ncvar[:]
@@ -384,7 +357,6 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
 
     global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
     
-    logger_info("normaliseAdvancedNetCDF norm hist.")
 
     histStr = "normaliseAdvancedNetCDF knmi: "+target_name+"min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name
     try:
@@ -398,7 +370,6 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
         w_nc_fid.setncattr(  k , v )
 
   except Exception, e:
-    logger_info("exception writing: [%s]",target_name)
     raise e
 
  

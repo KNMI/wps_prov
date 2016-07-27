@@ -524,27 +524,12 @@ class MetadataD4P(object):
     # special case adding provenance to netcdf, generalise...
     def closeProv(self):     
 
-        def logger_info(str1):
-              with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-                f.write(str(str1)+"\n")
-              f.close()
-
-
         if self.output is not None:
             try:
-                logger_info("closeProv()")
-                #logger_info("closeProv() "+str(self.output))
-                #logger_info("closeProv() "+str(self.output.variables))
-
                 self.output.setncattr('uuid' , self.uuid )
-
-                #logger_info("closeProv() "+str(self.output.variables['knmi_provenance']))
 
                 self.output.variables['knmi_provenance'].setncattr('bundle' , [json.dumps(self.bundle)])
 
-                #print json.dumps(self.bundle)
-
-                #logger_info("closeProv() ...")
                 try:
                    oldlin = json.loads(self.output.variables['knmi_provenance'].getncattr('lineage'))
                 except Exception, e:
@@ -555,24 +540,15 @@ class MetadataD4P(object):
                 except Exception, e:
                    traceback.print_exc(file=sys.stdout)
                    print e
-                   #oldlin = []
-
 
                 oldlin.append(self.lineage)
 
                 self.output.variables['knmi_provenance'].setncattr('lineage', json.dumps(oldlin) )
               
-                logger_info("closeProv() knmi_provenance var "+str( self.output.variables['knmi_provenance'] ))
-
                 try:
                     self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
-                    #self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov( oldlin, [self.bundle]) )
-                    #self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov( self.lineage , self.bundle) )
                 except Exception, e:
-                     logger_info("closeProv() failed xml generation "+str(e))
                      self.output.variables['knmi_provenance'].setncattr('prov-dm', str(e) )
-
-                logger_info("closeProv()  end!!!!!"  )  
                 self.output.close()
                     
 

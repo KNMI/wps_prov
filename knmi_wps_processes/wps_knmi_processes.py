@@ -13,69 +13,12 @@ import sys, traceback
 # author: ANDREJ
 # tests provenance with knmi wps.
 
+        # def #logger_info(str1):
+        #   with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
+        #     f.write(str(str1)+"\n")
+        #   f.close()
 
-# move to other place...
-
-# class KnmiClipcNormalisationWPS(KnmiWebProcessDescriptor):
-
-#     # override this function to allow 
-#     def process_function(self ,inputs, callback):
-#         # print "process_function" 
-#         # #pprint (inputs) 
-#         # pprint (inputs) 
-
-#         link_opendap = inputs['netcdf'].getValue()
-#         method       = inputs['norm'].getValue()
-
-#         nc_fid = netCDF4.Dataset( link_opendap ,'r')
-
-#         var = nc_fid.variables['vDTR'][:]
-
-#         normalised = clipc_wp8_norm.norm( var , method )
-
-#         nc_fid = netCDF4.Dataset( 'test.nc' ,'w')     
-
-
-#     def __init__(self):
-#         self.structure = {}      
-#         self.inputsTuple = []
-
-#         self.structure["identifier"] = "knmi_clipc_norm"   # = 'wps_simple_indice', # only mandatary attribute = same file name
-#         self.structure["title"]= "KNMI WPS: CLIPC normalisation" # = 'SimpleIndices',
-#         self.structure["abstract"] = "KNMI WPS Process: CLIPC Dataset normalisation tool"
-#         self.structure["storeSupported"] = True
-#         self.structure["statusSupported"] = True
-#         self.structure["grassLocation"] = False
-#         self.structure["metadata"] = "METADATA D4P"
-
-#         # input tuple describes addLiteralInput, values
-#         self.inputsTuple = [ 
-#                             { 
-#                             "identifier" : "netcdf" , 
-#                             "title"      : "Normaliser input: netCDF opendap link." ,
-#                             "type"       : "String",
-#                             "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
-#                             "values"     : None #"TG","TX","TN","TXx","TXn","TNx"]
-#                             },
-#                             { 
-#                             "identifier" : "norm" , 
-#                             "title"      : "Normaliser input: normalisation method." ,
-#                             "type"       : "String",
-#                             "default"    : "" ,
-#                             "values"     : clipc_wp8_norm.nrm.keys()
-#                             }                  
-#                           ]
-
-
-#         self.processCallback = self.process_function
-
-# def logger_info(str1):
-#   with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-#     f.write(str(str1)+"\n")
-#   f.close()
-
-#logger_info("wps_knmi_processes!")
-
+        ##logger_info("doit! process_execute_function")
 
 class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
 
@@ -163,7 +106,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
     # override with validation process
     def process_execute_function(self , inputs, callback , fileOutPath):
 
-        callback(5)
+        callback(20)
 
         #pprint(inputs) 
         content1 = {}
@@ -171,7 +114,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
         source1 = [inputs['netcdf_source'].getValue()]
         # validator old                 
         
-        callback(6)
+        callback(30)
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
             netcdf_w = processlib.copyNetCDF(    inputs['netcdf_source'].getValue() ,
@@ -184,14 +127,14 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                 content1[str(k).replace(".","_")] = str(v) 
 
         except Exception, e:
-            callback(7)
+            callback(70)
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
 
             raise e
-        callback(8)
-        #prov.content.append(content1)
+        callback(80)
+
         return content1 , source1, netcdf_w
 
 
@@ -249,14 +192,7 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
         
-        # def #logger_info(str1):
-        #   with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
-        #     f.write(str(str1)+"\n")
-        #   f.close()
-
-        ##logger_info("doit! process_execute_function")
-
-        callback(1)
+        callback(10)
 
         pprint(inputs) 
 
@@ -264,32 +200,14 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 
         source1 = [inputs['netcdf_source'].getValue()]
 
-# # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
-# pathToAppendToOutputDirectory = "/WPS_"+"TEST"+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
 
-# """ URL output path """
-# fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+        callback(20)
 
-# """ Internal output path"""
-# fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
-
-# """ Create output directory """
-# if not os.path.exists(fileOutPath):
-#     os.makedirs(fileOutPath)
-        callback(69)
-        # validator old                 
-        #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
-
-            ##logger_info("doit! process_execute_function start weightNetCDF")
             netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
                                                 inputs['weight'].getValue()            ,
                                                 inputs['variable'].getValue()          ,
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
-
-            ##logger_info("doit! process_execute_function start weightNetCDF DONE")
-            #prov.output = netcdf_w
-            #print netcdf_w
 
             #content of prov... move...
             for k in netcdf_w.ncattrs():
@@ -298,7 +216,6 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
                 content1[str(k).replace(".","_")] = str(v) 
 
         except Exception, e:
-            ##logger_info("doit! process_execute_function start weightNetCDF Exceptions!!!!!" )
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
@@ -373,13 +290,6 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 import urllib2
 import urllib
 import xml.etree.ElementTree as et
-# import crsbbox
-
-
-# def logger_info(str1):
-#   with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-#     f.write(str(str1)+"\n")
-#   f.close()
 
 
 def getWCS(   wcs_url1, 
@@ -398,7 +308,6 @@ def getWCS(   wcs_url1,
       request_describe =  wcs_url1 + "&" + str(data_describe)
 
       #print request_describe
-      #logger_info(request_describe)
 
       #print request_describe
       if certfile != None:
@@ -463,10 +372,9 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
-        
-        #logger_info("wcs! process_execute_function")
 
-        callback(1)
+
+        callback(10)
 
         content1 = {}
 
@@ -474,14 +382,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
         certfile = os.environ['HOME']+'certs/creds.pem'
 
-
-        def logger_info(str1):
-              with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-                f.write(str(str1)+"\n")
-              f.close()
-
-
-        callback(9)
+        callback(20)
         # validator old                 
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
@@ -505,12 +406,6 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             processlib.createKnmiProvVar(netcdf_w)
 
-            logger_info("wcs! process_execute_function: append file=\n"+str(netcdf_w))
-
-            # for k in netcdf_w.ncattrs():
-            #   v = netcdf_w.getncattr(k)
-            #   if k not in ["bundle","lineage"]:
-            #     content1[str(k).replace(".","_")] = str(v) 
             for k in netcdf_w.ncattrs():
               v = netcdf_w.getncattr(k)
               if k not in ["bundle","lineage","bundle2","lineage2"]:
@@ -523,7 +418,6 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             raise e
 
-        #prov.content.append(content1)
         return content1 , source1, netcdf_w
 
 
@@ -877,7 +771,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
     # override with validation process
     def process_execute_function(self , inputs, callback, fileOutPath):
 
-        callback(22)
+        callback(10)
 
         content1 = {}
 
@@ -898,19 +792,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         # fileOutPath
         ''' WCS '''
-        #logger_info("process_execute_function: start")
         try:
-            
-            #logger_info(knmiprocess.fileOutPath1)
-                            # "identifier" : "netcdf_source" , 
-                            # "identifier" : "bbox" , 
-                            # "identifier" : "time" , 
-                            # "identifier" : "netcdf_target" , 
-                            # "identifier" : "width" , 
-                            # "identifier" : "height" , 
-                            # "identifier" : "tags" , 
-  
-            #logger_info("process_execute_function: 1")
             knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source1'].getValue() })
             knmiprocess.inputs['bbox'].setValue(            {'value' : inputs['bbox'].getValue() } )
             knmiprocess.inputs['time'].setValue(            {'value' : inputs['time1'].getValue() } )
@@ -922,7 +804,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
-            #logger_info("process_execute_function: 2")
             knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source2'].getValue()})
             knmiprocess.inputs['bbox'].setValue(            {'value' : inputs['bbox'].getValue() } )
             knmiprocess.inputs['time'].setValue(            {'value' : inputs['time2'].getValue() } )
@@ -935,7 +816,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.execute()
 
         except Exception, e:
-            #logger_info(str(e))
             traceback.print_exc(file=sys.stderr)
             raise e
 
@@ -945,16 +825,8 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         # use parent path...
         knmiprocess.fileOutPath1 = fileOutPath
-        #inputs['']
 
-        # fileOutPath
-       
-        #logger_info("process_execute_function: start")
         try:
-            
-            #logger_info(knmiprocess.fileOutPath1)
-  
-            #logger_info("process_execute_function: 1")
             knmiprocess.inputs['netcdf_source'].setValue(   {'value' : knmiprocess.fileOutPath1+'COPY_WCS1.nc' })
             knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_NORM1.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm1'].getValue() } )
@@ -964,7 +836,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
-            #logger_info("process_execute_function: 2")
             knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_NORM1.nc'})
             knmiprocess.inputs['netcdf_target'].setValue(   {'value': 'COPY_WEIGHT1.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value': inputs['weight1'].getValue() } )
@@ -974,7 +845,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
-            #logger_info("process_execute_function: 3")
             knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_WCS2.nc'})
             knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_NORM2.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm2'].getValue() } )
@@ -984,7 +854,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
-            #logger_info("process_execute_function: 4")
             knmiprocess.inputs['netcdf_source'].setValue(   {'value':knmiprocess.fileOutPath1+'COPY_NORM2.nc'})
             knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_WEIGHT2.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value' : inputs['weight2'].getValue() } )
@@ -994,15 +863,13 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
-            #logger_info("process_execute_function: combine")
+            callback(30)
             ''' COMBINE '''
             knmiprocess = wps_knmi.KnmiWpsProcess(KnmiCombineDescriptor())
 
             # use parent path...
             knmiprocess.fileOutPath1 = fileOutPath
 
-            #logger_info(knmiprocess.fileOutPath1)
-            #logger_info("process_execute_function: 5")
             knmiprocess.inputs['netcdf_source1'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_WEIGHT1.nc'})
             knmiprocess.inputs['netcdf_source2'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_WEIGHT2.nc'})
 
@@ -1017,25 +884,20 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
-            #logger_info("process_execute_function: end")
 
         except Exception, e:
-            #logger_info(str(e))
             traceback.print_exc(file=sys.stderr)
             raise e
 
-        callback(33)    
+        callback(40)    
         
         try:
             netcdf_w = knmiprocess.netcdf_w
 
-            #netcdf_w = netCDF4.Dataset( target , 'a')
-
             processlib.createKnmiProvVar(netcdf_w)
 
+            callback(50)
 
-            #logger_info(netcdf_w)
-            callback(44)
             #content of prov... move...
             for k in netcdf_w.ncattrs():
               v = netcdf_w.getncattr(k)
@@ -1044,8 +906,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            #logger_info(netcdf_w)
-            #logger_info(content1)
 
             raise e
         
@@ -1200,14 +1060,8 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
         
-        # def #logger_info(str1):
-        #   with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
-        #     f.write(str(str1)+"\n")
-        #   f.close()
 
-        ##logger_info("doit! process_execute_function")
-
-        callback(1)
+        callback(10)
 
         pprint(inputs) 
 
@@ -1216,8 +1070,6 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
         source1 = [inputs['netcdf_source'].getValue()]
 
         try:
-
-            ##logger_info("doit! process_execute_function start weightNetCDF")
             netcdf_w = processlib.normaliseAdvancedNetCDF( inputs['netcdf_source'].getValue()     ,
                                                 inputs['min'].getValue()            ,
                                                 inputs['max'].getValue()            ,
@@ -1225,9 +1077,6 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
                                                 inputs['variable'].getValue()          ,
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
 
-            ##logger_info("doit! process_execute_function start weightNetCDF DONE")
-            #prov.output = netcdf_w
-            #print netcdf_w
 
             #content of prov... move...
             for k in netcdf_w.ncattrs():
@@ -1236,14 +1085,12 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
                 content1[str(k).replace(".","_")] = str(v) 
 
         except Exception, e:
-            ##logger_info("doit! process_execute_function start weightNetCDF Exceptions!!!!!" )
             content1 = {"copy_error": str(e) } 
             pprint (netcdf_w)
             pprint (content1)
 
             raise e
 
-        #prov.content.append(content1)
         return content1 , source1, netcdf_w
 
 
