@@ -817,10 +817,10 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.inputs['variable1'].setValue( {'value' : inputs['variable1'].getValue() } )
             knmiprocess.inputs['variable2'].setValue( {'value' : inputs['variable2'].getValue() } )
 
-            knmiprocess.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
+            knmiprocess.inputs['netcdf_target'].setValue( {'value': inputs['netcdf_target'].getValue()})
 
             # output # issue...
-            self.process.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
+            #self.process.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
 
             knmiprocess.inputs['operation'].setValue( {'value' : inputs['operation'].getValue() } )
             knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
