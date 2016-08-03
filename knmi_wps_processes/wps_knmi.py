@@ -167,9 +167,12 @@ class KnmiWpsProcess(WPSProcess):
             # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
             pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M")
 
+            self.callback("POF_OUTPUT_URL: "+os.environ['POF_OUTPUT_URL'],1)
             # """ URL output path """
             self.fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
             
+
+
             """ Internal output path"""
             self.fileOutPath1 = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
 

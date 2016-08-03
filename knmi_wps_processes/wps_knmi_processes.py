@@ -819,6 +819,9 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             knmiprocess.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
 
+            # output # issue...
+            self.process.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
+
             knmiprocess.inputs['operation'].setValue( {'value' : inputs['operation'].getValue() } )
             knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
             
