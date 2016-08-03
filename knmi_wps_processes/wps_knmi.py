@@ -159,6 +159,7 @@ class KnmiWpsProcess(WPSProcess):
 
         #self.callback( "EXECUTE...",0)
 
+        ''' file path based on oauth and cert user.'''
         if self.fileOutPath1 is None:
             """ pathToAppendToOutputDirectory """
             # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
@@ -185,6 +186,7 @@ class KnmiWpsProcess(WPSProcess):
         # currently    
         self.callback("KnmiWpsProcess", 2)
 
+        ''' create metadata object, initiate bundle if not existing '''
         # bundle created here
         # use prov call back later... each start creates lineage info
         prov = provenance.MetadataD4P(  name=self.identifier , 
@@ -199,10 +201,13 @@ class KnmiWpsProcess(WPSProcess):
         #prov.start( self.inputs ) # use prov call back later... each start creates lineage info
         self.callback("Start wps.", 3)
 
+        ''' run: process_execute_function, defined in descriptor '''
         #with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f2:
         try:
             self.callback("Start wps.", 4)
 
+
+            ''' PROCESS OUTPUTs '''
             content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
 
             self.netcdf_w = fileO
@@ -224,7 +229,7 @@ class KnmiWpsProcess(WPSProcess):
 
         prov.output = fileO  
         
-        ''' ??? provenance related can be moved'''
+        ''' provenance related can be moved'''
         try:
             outputurl = self.inputs['netcdf_target'].getValue()
         except Exception, e:
@@ -234,6 +239,7 @@ class KnmiWpsProcess(WPSProcess):
         ''' adds knmi_prov '''
         prov.finish( source , outputurl )  
 
+        ''' finalise prov and write to netcdf '''
         prov.closeProv()
 
         self.opendapURL.setValue(self.fileOutPath1+outputurl)
