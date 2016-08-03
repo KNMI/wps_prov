@@ -20,6 +20,7 @@ import provenance
 from pprint import pprint
 import sys, traceback #traceback.print_exc(file=sys.stdout)
 import netCDF4
+import logging
 #import provexport
 
 #KnmiWebProcessDescriptor
@@ -90,7 +91,7 @@ class KnmiWpsProcess(WPSProcess):
     # descirbes WPS
     def __init__(self,descriptor):
         self.fileOutPath1 = None
-
+        self.fileOutURL = None
         self.bundle = None
 
         self.output = None
@@ -132,7 +133,8 @@ class KnmiWpsProcess(WPSProcess):
                 if inputDict["maxOccurs"] is not None:
                     self.inputs[inputDict["identifier"]].maxOccurs = inputDict["maxOccurs"]
             except Exception, e:
-                print "no maxOccurs"
+                pass
+            #print "no maxOccurs"
 
             try:              
                 if inputDict["values"] is not None:
@@ -166,7 +168,7 @@ class KnmiWpsProcess(WPSProcess):
             pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M")
 
             # """ URL output path """
-            # fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+            self.fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
             
             """ Internal output path"""
             self.fileOutPath1 = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
@@ -205,6 +207,16 @@ class KnmiWpsProcess(WPSProcess):
         #with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f2:
         try:
             self.callback("Start wps.", 4)
+            
+            for k in self.inputs.keys():
+                self.callback(str(k)+": "+str( self.inputs[k].getValue()), 4)
+            
+            
+            logging.debug("Something has been debugged")
+
+            
+            self.callback(str(self.fileOutPath1), 4)
+            
 
 
             ''' PROCESS OUTPUTs '''
@@ -242,7 +254,8 @@ class KnmiWpsProcess(WPSProcess):
         ''' finalise prov and write to netcdf '''
         prov.closeProv()
 
-        self.opendapURL.setValue(self.fileOutPath1+outputurl)
+        logging.debug("self.fileOutURL == "+str(self.fileOutURL))
+        self.opendapURL.setValue(str(self.fileOutURL)+outputurl)
 
         ''' output to local json '''
         prov.writeMetadata('bundle.json')

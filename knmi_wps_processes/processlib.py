@@ -175,7 +175,12 @@ def weightNetCDF( source_name , weight , layer , target_name):
           except Exception, e:
             raise e
         elif var_name != 'knmi_provenance': 
-          outVar[:] = ncvar[:]
+          try:
+            outVar[:] = ncvar[:]
+          except Exception as e:
+            """ Fill value for string is not oK """
+            outVar = ncvar
+            pass
         
     createKnmiProvVar(w_nc_fid)
 
@@ -244,9 +249,13 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
 
             # astype('f4')
             if var_name == layer1:
-              outVar[:] = operation(ncvar[:] , nc_fid2.variables[layer2][:])  
+                outVar[:] = operation(ncvar[:] , nc_fid2.variables[layer2][:])  
             elif var_name != 'knmi_provenance' :
-              outVar[:] = ncvar[:]
+                try:
+                    outVar[:] = ncvar[:]
+                except Exception as e:
+                    outVar = ncvar
+                pass
 
         createKnmiProvVar(w_nc_fid)
 
@@ -327,7 +336,11 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
           except Exception, e:
             raise e   
         elif var_name != 'knmi_provenance': 
-          outVar[:] = ncvar[:]
+            try:
+                outVar[:] = ncvar[:]
+            except Exception as e:
+                outVar = ncvar
+            pass
         
     createKnmiProvVar(w_nc_fid)
 

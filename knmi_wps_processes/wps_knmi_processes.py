@@ -8,6 +8,8 @@ from datetime import datetime
 import os
 import sys, traceback
 import wps_knmi
+import time
+import logging
 
 #from clipcombine.clipc_combine_process import clipc_combine_process
 # run from run.wps.here.py (this allows the local cgi to be used...)
@@ -168,7 +170,9 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             "title"      : "Copy input: Output netCDF." ,
                             "type"       : type("String"),
                             "default"    : "COPY_OUT.nc",
-                            "values"     : None
+                            "values"     : None,
+                            "minOccurs"  : 1,
+                            "maxOccurs"  : 1
                             } ,
                             { 
                             "identifier" : "tags" , 
@@ -205,11 +209,19 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
         callback(20)
 
         try:
+            logging.debug("inputs['netcdf_source'].getValue() "+str(inputs['netcdf_source'].getValue()))
+            logging.debug("inputs['netcdf_target'].getValue() "+str(inputs['netcdf_target'].getValue()))
+            logging.debug("inputs['variable'].getValue() "+str(inputs['variable'].getValue()))
+            
             netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
                                                 inputs['weight'].getValue()            ,
                                                 inputs['variable'].getValue()          ,
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
 
+            logging.debug("inputs['netcdf_source'].getValue() "+str(inputs['netcdf_source'].getValue()))
+            logging.debug("inputs['netcdf_target'].getValue() "+str(inputs['netcdf_target'].getValue()))
+            logging.debug("inputs['variable'].getValue() "+str(inputs['variable'].getValue()))
+            
             #content of prov... move...
             for k in netcdf_w.ncattrs():
               v = netcdf_w.getncattr(k)
@@ -292,6 +304,7 @@ import urllib2
 import urllib
 import xml.etree.ElementTree as et
 
+import logging
 
 def getWCS(   wcs_url1, 
               bbox, 
@@ -341,7 +354,7 @@ def getWCS(   wcs_url1,
                     ('REQUEST' , 'GetCoverage') ,
                     ('COVERAGE', title),
                     ('CRS'     , crs ),  
-                    ('FORMAT'  , 'NetCDF') ,
+                    ('FORMAT'  , 'netcdf') ,
                     ('BBOX'    , bbox ),
                     ('WIDTH' , width ),
                     ('HEIGHT', height ) 
@@ -353,7 +366,9 @@ def getWCS(   wcs_url1,
       data = urllib.urlencode(values)
 
       request =  wcs_url1 + "&" + str(data)
-
+      logging.debug("WCS Request: "+request);
+      logging.debug("WCS: writing to "+str(output_file));
+    
       if certfile != None:
         opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
         response = opener.open(request)
@@ -684,15 +699,16 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         except Exception ,e:
             raise "Error exception in operator"
 
-        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWcsDescriptor())
-        knmiprocess.bundle = self.process.bundle
-        # use parent path...
-        knmiprocess.fileOutPath1 = fileOutPath
+        
         #inputs['']
 
         # fileOutPath
         ''' WCS '''
         try:
+            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWcsDescriptor())
+            knmiprocess.bundle = self.process.bundle
+            # use parent path...
+            knmiprocess.fileOutPath1 = fileOutPath
             knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source1'].getValue() })
             knmiprocess.inputs['bbox'].setValue(            {'value' : inputs['bbox'].getValue() } )
             knmiprocess.inputs['time'].setValue(            {'value' : inputs['time1'].getValue() } )
@@ -701,9 +717,15 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.inputs['height'].setValue(          {'value' : inputs['height'].getValue() } )
             knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
+            logging.debug("Starting, creating 1 "+ knmiprocess.inputs['netcdf_target'].getValue());      
             knmiprocess.status = self.process.status
             knmiprocess.execute()
+            logging.debug("Done, creating 1 "+ knmiprocess.inputs['netcdf_target'].getValue());      
 
+            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWcsDescriptor())
+            knmiprocess.bundle = self.process.bundle
+            # use parent path...
+            knmiprocess.fileOutPath1 = fileOutPath
             knmiprocess.inputs['netcdf_source'].setValue(   {'value' : inputs['netcdf_source2'].getValue()})
             knmiprocess.inputs['bbox'].setValue(            {'value' : inputs['bbox'].getValue() } )
             knmiprocess.inputs['time'].setValue(            {'value' : inputs['time2'].getValue() } )
@@ -712,8 +734,10 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.inputs['height'].setValue(          {'value' : inputs['height'].getValue() } )
             knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
+            logging.debug("Starting, creating 2 "+ knmiprocess.inputs['netcdf_target'].getValue());
             knmiprocess.status = self.process.status
             knmiprocess.execute()
+            logging.debug("Done, creating 2 "+ knmiprocess.inputs['netcdf_target'].getValue());
 
         except Exception, e:
             traceback.print_exc(file=sys.stderr)
@@ -721,12 +745,13 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
 
         ''' NORMALISE '''
-        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
-        knmiprocess.bundle = self.process.bundle
-        # use parent path...
-        knmiprocess.fileOutPath1 = fileOutPath
-
+   
         try:
+            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+            knmiprocess.bundle = self.process.bundle
+            # use parent path...
+            knmiprocess.fileOutPath1 = fileOutPath
+
             knmiprocess.inputs['netcdf_source'].setValue(   {'value' : knmiprocess.fileOutPath1+'COPY_WCS1.nc' })
             knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_NORM1.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm1'].getValue() } )
@@ -735,6 +760,11 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             knmiprocess.status = self.process.status
             knmiprocess.execute()
+            
+            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+            knmiprocess.bundle = self.process.bundle
+            # use parent path...
+            knmiprocess.fileOutPath1 = fileOutPath
 
             knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_NORM1.nc'})
             knmiprocess.inputs['netcdf_target'].setValue(   {'value': 'COPY_WEIGHT1.nc'} )
@@ -745,6 +775,11 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
+            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+            knmiprocess.bundle = self.process.bundle
+            # use parent path...
+            knmiprocess.fileOutPath1 = fileOutPath
+            
             knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_WCS2.nc'})
             knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_NORM2.nc'} )
             knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm2'].getValue() } )
@@ -753,6 +788,11 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             knmiprocess.status = self.process.status
             knmiprocess.execute()
+            
+            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+            knmiprocess.bundle = self.process.bundle
+            # use parent path...
+            knmiprocess.fileOutPath1 = fileOutPath
 
             knmiprocess.inputs['netcdf_source'].setValue(   {'value':knmiprocess.fileOutPath1+'COPY_NORM2.nc'})
             knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_WEIGHT2.nc'} )
@@ -781,7 +821,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             knmiprocess.inputs['operation'].setValue( {'value' : inputs['operation'].getValue() } )
             knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
-
+            
             knmiprocess.status = self.process.status
             knmiprocess.execute()
 
