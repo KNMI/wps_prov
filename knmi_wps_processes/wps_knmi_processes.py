@@ -1,7 +1,6 @@
 import processlib
 from wps_knmi import KnmiWebProcessDescriptor
 from pywps.Process import Status
-from pprint import pprint
 import netCDF4
 import numpy as np
 from datetime import datetime
@@ -23,15 +22,58 @@ import logging
 
         ##logger_info("doit! process_execute_function")
 
+
+def generateContent(netcdf_w):
+
+    ''' return content1 dictionary used in all outputs '''
+
+    content1 = {}
+    for k in netcdf_w.ncattrs():
+        v = netcdf_w.getncattr(k)
+        if k not in ["bundle","lineage","bundle2","lineage2"]:
+            content1[str(k).replace(".","_")] = str(v)
+
+    try:    
+        for k, v in netcdf_w.variables.iteritems():   
+            # print "var: "+str(k) #.replace(".","_")
+            if k not in ["knmi_provenance"]:
+                #content1["variable_"+str(k)] = str(v.short_name)
+                for x in v.ncattrs():
+                    content1["variable_"+str(k)+"_"+x] = str(v.getncattr(x))
+                
+                # print v.shape
+                try:
+                    content1["variable_"+str(k)+"_shape"] = str(v.shape)
+                except Exception, e:
+                    pass
+                
+                # print v.size
+                try:
+                    content1["variable_"+str(k)+"_size"]  = str(v.size)
+                except Exception, e:
+                    pass
+
+                # # print v.ndim
+                # content1["variable_"+str(k)+"_ndim"]  = str(v.ndim)
+
+    except Exception, e:
+        logging.debug(str(e))       
+ 
+    return content1 
+
+
+
+
 class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
 
+    ''' validation wps, not used, left as example for none output wps '''
 
     # override with validation process
     def process_execute_function(self , inputs, callback, fileOutPath):
 
         callback(33)
 
-        pprint(inputs) 
+        logging.error(inputs) 
 
         variables = ["title",
                         "summary",
@@ -54,8 +96,8 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
 
         (metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
 
-        pprint(content1)
-        pprint( metaTestAnswer )
+        logging.error(content1)
+        logging.error( metaTestAnswer )
 
         if not os.path.exists(fileOutPath):
             os.rmdirs(fileOutPath)
@@ -103,37 +145,38 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
         self.processExecuteCallback = self.process_execute_function
 
 
+
 class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
 
 
+    ''' Copy data wps, best example of simple input/output case '''
     # override with validation process
     def process_execute_function(self , inputs, callback , fileOutPath):
 
-        callback(20)
+        callback(10)
 
-        #pprint(inputs) 
         content1 = {}
-
-        source1 = [inputs['netcdf_source'].getValue()]
+        source1  = [inputs['netcdf_source'].getValue()]
         # validator old                 
         
-        callback(30)
+        callback(20)
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
             netcdf_w = processlib.copyNetCDF(    inputs['netcdf_source'].getValue() ,
                                                  fileOutPath+inputs['netcdf_target'].getValue() )
 
             #content of prov... move...
-            for k in netcdf_w.ncattrs():
-              v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage"]:
-                content1[str(k).replace(".","_")] = str(v) 
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+            content1 = generateContent(netcdf_w)
 
         except Exception, e:
             callback(70)
             content1 = {"copy_error": str(e) } 
-            pprint (netcdf_w)
-            pprint (content1)
+            logging.error (netcdf_w)
+            logging.error (content1)
 
             raise e
         callback(80)
@@ -185,53 +228,43 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
 
         self.processExecuteCallback = self.process_execute_function
 
-
 class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
+
+    ''' weighted copy and normalisation wps, versitile and used actively '''
 
     # via terminal
     # http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=getcapabilities
     # http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=execute&identifier=knmi_weight&version=1.0.0&storeexecuteresponse=true&netcdf_source=COPY1.nc&weight=1.2&netcdf_target=X1.nc&variable=vDTR&tags=dre
 
- 
 
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
         
         callback(10)
 
-        pprint(inputs) 
-
         content1 = {}
-
         source1 = [inputs['netcdf_source'].getValue()]
 
 
         callback(20)
 
-        try:
-            logging.debug("inputs['netcdf_source'].getValue() "+str(inputs['netcdf_source'].getValue()))
-            logging.debug("inputs['netcdf_target'].getValue() "+str(inputs['netcdf_target'].getValue()))
-            logging.debug("inputs['variable'].getValue() "+str(inputs['variable'].getValue()))
-            
+        try:            
             netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
                                                 inputs['weight'].getValue()            ,
                                                 inputs['variable'].getValue()          ,
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
 
-            logging.debug("inputs['netcdf_source'].getValue() "+str(inputs['netcdf_source'].getValue()))
-            logging.debug("inputs['netcdf_target'].getValue() "+str(inputs['netcdf_target'].getValue()))
-            logging.debug("inputs['variable'].getValue() "+str(inputs['variable'].getValue()))
-            
             #content of prov... move...
-            for k in netcdf_w.ncattrs():
-              v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage"]:
-                content1[str(k).replace(".","_")] = str(v) 
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+            content1 = generateContent(netcdf_w)    
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            pprint (netcdf_w)
-            pprint (content1)
+            logging.error (netcdf_w)
+            logging.error (content1)
 
             raise e
 
@@ -300,91 +333,12 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
         print self
 
 
-import urllib2
-import urllib
-import xml.etree.ElementTree as et
-
-import logging
-
-def getWCS(   wcs_url1, 
-              bbox, 
-              time, 
-              output_file,
-              width=300,
-              height=300,
-              certfile=None):
- 
-
-      # Describe Coverage: used to id layer,
-      # data also available in getCapabilities...
-      values_describe = [  ('SERVICE' , 'WCS'), ('REQUEST' , 'DescribeCoverage') ]
-      data_describe = urllib.urlencode(values_describe)
-      request_describe =  wcs_url1 + "&" + str(data_describe)
-
-      #print request_describe
-
-      #print request_describe
-      if certfile != None:
-        opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
-        response = opener.open(request_describe)
-      else:
-        response = urllib2.urlopen( request_describe )
-              
-      xmlresponse = response.read()
-      tree = et.fromstring(xmlresponse)
-
-      for i in tree.iter():
-        if 'name' in str(i):
-          title = i.text
-          break
-
-      # # desribe coordinate ref system    
-      crs = 'EPSG:4326'
-      #   #'EPSG:3575'
-      # #'EPSG:28992' 
-      # #'EPSG:4326'
-
-      # # use standard bbox...
-      # # TODO if bbox provided check and use...
-      # if bbox is None:
-      #   bbox = crsbbox.getBBOX(crs)
-
-      # get coverage based on layer described in Describe coverage.
-      values = [    ('SERVICE' , 'WCS'),
-                    ('REQUEST' , 'GetCoverage') ,
-                    ('COVERAGE', title),
-                    ('CRS'     , crs ),  
-                    ('FORMAT'  , 'netcdf') ,
-                    ('BBOX'    , bbox ),
-                    ('WIDTH' , width ),
-                    ('HEIGHT', height ) 
-                ]
-
-      if time is not None:
-        values.append( ('TIME', time))    
-
-      data = urllib.urlencode(values)
-
-      request =  wcs_url1 + "&" + str(data)
-      logging.debug("WCS Request: "+request);
-      logging.debug("WCS: writing to "+str(output_file));
-    
-      if certfile != None:
-        opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
-        response = opener.open(request)
-      else:
-        response = urllib2.urlopen( request )
-
-      output = output_file
-      out = open( output , 'wb')
-      out.write( bytes(response.read() ) )
-      out.close()
-
-      return output_file
-
 
 
 class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
+
+    ''' wcs client used insiede wps '''
+
 
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
@@ -407,7 +361,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             target = fileOutPath+inputs['netcdf_target'].getValue()
 
-            netcdf_w = getWCS(  'https://climate4impact.eu/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
+            netcdf_w = processlib.getWCS(  'https://climate4impact.eu/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
                                 bbox , 
                                 inputs['time'].getValue(), 
                                 target,
@@ -422,15 +376,16 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             processlib.createKnmiProvVar(netcdf_w)
 
-            for k in netcdf_w.ncattrs():
-              v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage","bundle2","lineage2"]:
-                content1[str(k).replace(".","_")] = str(v) 
-
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage","bundle2","lineage2"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+            content1 = generateContent(netcdf_w)
+                 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            pprint (netcdf_w)
-            pprint (content1)
+            logging.error (netcdf_w)
+            logging.error (content1)
 
             raise e
 
@@ -539,25 +494,18 @@ op = {  "add"       :np.add,
 
 class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
 
+    ''' basic combine operation of two netcdfs '''
 
     # override with validation process
     def process_execute_function(self , inputs, callback, fileOutPath):
 
         callback(22)
 
-        pprint(inputs) 
+        logging.error(inputs) 
 
         content1 = {}
 
         source1 = [inputs['netcdf_source1'].getValue() , inputs['netcdf_source2'].getValue()]
-
-        # op = {  "add"       :np.add,
-        #         "subtract"  :np.subtract,
-        #         "multiply"  :np.multiply,
-        #         "divide"    :np.divide ,
-        #         "equal"     :np.equal  ,
-        #         "less"      :np.less ,
-        #         "greater"   :np.greater }
 
         try:
             operation = op[inputs['operation'].getValue()]
@@ -577,15 +525,16 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
             #print netcdf_w
             callback(44)
             #content of prov... move...
-            for k in netcdf_w.ncattrs():
-              v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage","bundle2","lineage2"]:
-                content1[str(k).replace(".","_")] = str(v) 
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage","bundle2","lineage2"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+            content1 = generateContent(netcdf_w)
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            pprint (netcdf_w)
-            pprint (content1)
+            logging.debug(netcdf_w)
+            logging.error (content1)
 
             raise e
 
@@ -674,15 +623,10 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
 
 
 
-# def logger_info(str1):
-#       with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
-#         f.write(str(str1)+"\n")
-#       f.close()
-
-        #logger_info("doit! process_execute_function")
 
 class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
+    ''' advanced combine class, uses multiple wps's '''
 
     # override with validation process
     def process_execute_function(self , inputs, callback, fileOutPath):
@@ -834,15 +778,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             raise e
 
         callback(40)    
-
-        # def logger_info(str1):
-        #     with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-        #         f.write(str(str1)+"\n")
-        #     f.close()
-            
-
-        #logger_info("wps_knmi output_file!")
-
         
         try:
             target = fileOutPath+knmiprocess.inputs['netcdf_target'].getValue()
@@ -856,10 +791,11 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             callback(50)
 
             #content of prov... move...
-            for k in netcdf_w.ncattrs():
-              v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage","bundle2","lineage2"]:
-                content1[str(k).replace(".","_")] = str(v) 
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage","bundle2","lineage2"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+            content1 = generateContent(netcdf_w)    
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
@@ -1022,7 +958,7 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
 
         callback(10)
 
-        pprint(inputs) 
+        logging.error(inputs) 
 
         content1 = {}
 
@@ -1038,15 +974,17 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
 
 
             #content of prov... move...
-            for k in netcdf_w.ncattrs():
-              v = netcdf_w.getncattr(k)
-              if k not in ["bundle","lineage"]:
-                content1[str(k).replace(".","_")] = str(v) 
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+
+            content1 = generateContent(netcdf_w)      
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            pprint (netcdf_w)
-            pprint (content1)
+            logging.error (netcdf_w)
+            logging.error (content1)
 
             raise e
 

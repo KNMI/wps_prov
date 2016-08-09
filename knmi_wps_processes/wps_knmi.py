@@ -17,22 +17,24 @@ from pywps.Process import WPSProcess
 import os
 from datetime import datetime
 import provenance
-from pprint import pprint
 import sys, traceback #traceback.print_exc(file=sys.stdout)
 import netCDF4
 import logging
-#import provexport
 
-#KnmiWebProcessDescriptor
+
  
 # base descriptor used in wps_knmi_processes
 class KnmiWebProcessDescriptor(object):
 
+    ''' generic descriptor for knmi wps processes '''
+
     # override this function to allow 
     def process_execute_function(self ,inputs, callback, fileOutPath):
+
+        ''' only logs '''
         print "process_execute_function" 
-        #pprint (inputs) 
-        pprint (inputs)
+        #logging.error (inputs) 
+        logging.error (inputs)
 
         #print "content: ",prov.content 
 
@@ -84,12 +86,14 @@ class KnmiWebProcessDescriptor(object):
 # generic KNMI process
 class KnmiWpsProcess(WPSProcess):
 
-
+    ''' Generic KNMI WPS Process with provenance enabled: constructed using KnmiWebProcessDescriptor '''
     #def __init__(self):
     #    KnmiWpsProcess.__init__(self, KnmiWebProcessDescriptor() )
 
     # descirbes WPS
     def __init__(self,descriptor):
+
+        ''' initialise with KnmiWebProcessDescriptor '''
         self.fileOutPath1 = None
         self.fileOutURL = None
         self.bundle = None
@@ -133,14 +137,16 @@ class KnmiWpsProcess(WPSProcess):
                 if inputDict["maxOccurs"] is not None:
                     self.inputs[inputDict["identifier"]].maxOccurs = inputDict["maxOccurs"]
             except Exception, e:
+                #print "no maxOccurs"
                 pass
-            #print "no maxOccurs"
-
+                
             try:              
                 if inputDict["values"] is not None:
                     self.inputs[inputDict["identifier"]].values = inputDict["values"]
             except Exception, e:
-                print "no values"
+                #print "no values"
+                pass
+
 
         self.processExecuteCallback = descriptor.processExecuteCallback
 
@@ -148,6 +154,7 @@ class KnmiWpsProcess(WPSProcess):
 
     # logging using pywps status module   
     def callback(self,message,percentage):
+        ''' status update '''
         self.status.set("%s" % str(message),str(percentage));
 
 
@@ -155,6 +162,8 @@ class KnmiWpsProcess(WPSProcess):
     # key:    
     # runs WPS
     def execute(self):
+
+        ''' runs wps with provenance '''
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
         homedir = os.environ['HOME']
         os.chdir(homedir)
@@ -167,7 +176,7 @@ class KnmiWpsProcess(WPSProcess):
             # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
             pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M")
 
-            self.callback("POF_OUTPUT_URL: "+os.environ['POF_OUTPUT_URL'],1)
+            #self.callback("POF_OUTPUT_URL: "+os.environ['POF_OUTPUT_URL'],1)
             # """ URL output path """
             self.fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
             
@@ -257,7 +266,7 @@ class KnmiWpsProcess(WPSProcess):
         ''' finalise prov and write to netcdf '''
         prov.closeProv()
 
-        logging.debug("self.fileOutURL == "+str(self.fileOutURL))
+        #logging.debug("self.fileOutURL == "+str(self.fileOutURL))
         self.opendapURL.setValue(str(self.fileOutURL)+outputurl)
 
         ''' output to local json '''

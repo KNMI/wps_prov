@@ -67,7 +67,11 @@ def createKnmiProvVar(w_nc_fid):
     v.setncattr('lineage','')
     v.setncattr('prov-dm','')
 
-
+def appendHistory(global_vars, histStr):
+      try:
+        global_vars['history'] = global_vars['history']+"\n"+histStr
+      except Exception, e:
+        global_vars['history'] = histStr
 
 def copyNetCDF( source_name , target_name):
   try:
@@ -111,12 +115,12 @@ def copyNetCDF( source_name , target_name):
       #   print e
       #   global_vars['bundle'] = bundStr
 
-      histStr = "copyNetCDF knmi: "+target_name+" to "+source_name
-      try:
-        global_vars['history'] = global_vars['history']+"\n"+histStr
-      except Exception, e:
-        global_vars['history'] = histStr
-
+      # histStr = "copyNetCDF knmi: "+target_name+" to "+source_name
+      # try:
+      #   global_vars['history'] = global_vars['history']+"\n"+histStr
+      # except Exception, e:
+      #   global_vars['history'] = histStr
+      appendHistory(global_vars,"knmi copy from "+source_name)
       
       #pprint(global_vars)
 
@@ -199,12 +203,12 @@ def weightNetCDF( source_name , weight , layer , target_name):
     #   print e
     #   global_vars['bundle'] = bundStr
 
-    histStr = "weightNetCDF knmi: "+target_name+"weight of "+weight+" to "+source_name
-    try:
-      global_vars['history'] = global_vars['history']+"\n"+histStr
-    except Exception, e:
-      global_vars['history'] = histStr
-
+    # histStr = "weightNetCDF knmi: "+target_name+"weight of "+weight+" to "+source_name
+    # try:
+    #   global_vars['history'] = global_vars['history']+"\n"+histStr
+    # except Exception, e:
+    #   global_vars['history'] = histStr
+    appendHistory(global_vars,"knmi scale weight:"+weight+" data:"+source_name)  
      
     for k in sorted(global_vars.keys()):
         v = global_vars[k] 
@@ -262,11 +266,14 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
         global_vars  = dict((k , nc_fid1.getncattr(k) ) for k in nc_fid1.ncattrs() )
         global_vars2 = dict((k , nc_fid2.getncattr(k) ) for k in nc_fid2.ncattrs() )
 
-        histStr = "COMBINE NetCDF knmi: "+target_name+"weight of "+source_name1+" to "+source_name2
-        try:
-          global_vars['history'] = global_vars['history']+"\n"+histStr
-        except Exception, e:
-          global_vars['history'] = histStr
+        # histStr = "COMBINE NetCDF knmi: "+target_name+"weight of "+source_name1+" to "+source_name2
+        # try:
+        #   global_vars['history'] = global_vars['history']+"\n"+histStr
+        # except Exception, e:
+        #   global_vars['history'] = histStr
+        appendHistory(global_vars,"knmi combine source1:"+source_name1+" and source2:"+source_name2)  
+  
+          
 
         try:
           for k in sorted(global_vars.keys()):
@@ -281,7 +288,13 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
               if k in ['lineage','bundle']:
                 w_nc_fid.variables['knmi_provenance'].setncattr(  k+"2" , v )
               else:
-                w_nc_fid.setncattr(  k+"2" , v )
+                #w_nc_fid.setncattr(  k+"2" , v )
+ 
+                if( k not in global_vars.keys() ):
+                  w_nc_fid.setncattr(  k+"2" , v )
+                elif( global_vars[k] != v ):
+                  w_nc_fid.setncattr(  k+"2" , v ) 
+
 
         except Exception, e:
           raise e
@@ -347,12 +360,12 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
     global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
     
 
-    histStr = "normaliseAdvancedNetCDF knmi: "+target_name+"min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name
-    try:
-      global_vars['history'] = global_vars['history']+"\n"+histStr
-    except Exception, e:
-      global_vars['history'] = histStr
-
+    #istStr = "knmi normalise by threshold min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name
+    # try:
+    #   global_vars['history'] = global_vars['history']+"\n"+histStr
+    # except Exception, e:
+    #   global_vars['history'] = histStr
+    appendHistory(global_vars,"knmi normalise by threshold min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name) 
      
     for k in sorted(global_vars.keys()):
         v = global_vars[k] 
@@ -364,3 +377,84 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
     raise e
 
   return w_nc_fid
+
+
+import urllib2
+import urllib
+import xml.etree.ElementTree as et
+
+def getWCS(   wcs_url1, 
+              bbox, 
+              time, 
+              output_file,
+              width=300,
+              height=300,
+              certfile=None):
+ 
+
+      # Describe Coverage: used to id layer,
+      # data also available in getCapabilities...
+      values_describe = [  ('SERVICE' , 'WCS'), ('REQUEST' , 'DescribeCoverage') ]
+      data_describe = urllib.urlencode(values_describe)
+      request_describe =  wcs_url1 + "&" + str(data_describe)
+
+      #print request_describe
+
+      #print request_describe
+      if certfile != None:
+        opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
+        response = opener.open(request_describe)
+      else:
+        response = urllib2.urlopen( request_describe )
+              
+      xmlresponse = response.read()
+      tree = et.fromstring(xmlresponse)
+
+      for i in tree.iter():
+        if 'name' in str(i):
+          title = i.text
+          break
+
+      # # desribe coordinate ref system    
+      crs = 'EPSG:4326'
+      #   #'EPSG:3575'
+      # #'EPSG:28992' 
+      # #'EPSG:4326'
+
+      # # use standard bbox...
+      # # TODO if bbox provided check and use...
+      # if bbox is None:
+      #   bbox = crsbbox.getBBOX(crs)
+
+      # get coverage based on layer described in Describe coverage.
+      values = [    ('SERVICE' , 'WCS'),
+                    ('REQUEST' , 'GetCoverage') ,
+                    ('COVERAGE', title),
+                    ('CRS'     , crs ),  
+                    ('FORMAT'  , 'netcdf') ,
+                    ('BBOX'    , bbox ),
+                    ('WIDTH' , width ),
+                    ('HEIGHT', height ) 
+                ]
+
+      if time is not None:
+        values.append( ('TIME', time))    
+
+      data = urllib.urlencode(values)
+
+      request =  wcs_url1 + "&" + str(data)
+      logging.debug("WCS Request: "+request);
+      logging.debug("WCS: writing to "+str(output_file));
+    
+      if certfile != None:
+        opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
+        response = opener.open(request)
+      else:
+        response = urllib2.urlopen( request )
+
+      output = output_file
+      out = open( output , 'wb')
+      out.write( bytes(response.read() ) )
+      out.close()
+
+      return output_file

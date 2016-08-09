@@ -17,6 +17,6 @@ export PYTHONPATH=$PYWPS_PROCESSES:$PYTHONPATH
 #python test.wps.py
 #python init_knmi_wps_local.py
 python init_knmi_wps_weight.py
-
+#python lookat.py
 
 #echo $PYTHONPATH
