@@ -342,10 +342,41 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
             #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )# does not set other value...    
             #outVar[:] = [ np.nan if a < float(min0) else a for a in ncvar[:] ] # for array need matrix option
             
+            # floats used
+            max1 =float(max0)
+            min1 =float(min0)
+            cen1 =float(centre0)            
+            
+            # threshold
             # keep mid values
-            outVar[:] = stats.threshold(ncvar[:], threshmin=float(min0), threshmax=float(max0), newval=np.nan)
+            outVar[:] = stats.threshold(ncvar[:], threshmin=min1, threshmax=max1, newval=np.nan)
 
-            outVar[:] = outVar[:] / float(centre0)
+            if max1 == cen1 :
+              b_mn =  1.0 / ( cen1 - min1 )  
+              a_mn = - min1 * b_mn
+
+              def normalise_tudo(x):
+                  return b_mn * x + a_mn 
+            elif cen1 == min1:
+              b_mx = -1.0 / ( max1 - cen1 )   
+              a_mx = - max1 * b_mx
+
+              def normalise_tudo(x):
+                  return b_mx * x + a_mx 
+            else:    
+              b_mn =  1.0 / ( cen1 - min1 )
+              b_mx = -1.0 / ( max1 - cen1 )
+
+              a_mn = - min1 * b_mn
+              a_mx = - max1 * b_mx
+
+              def normalise_tudo(x):
+                  return b_mn * x + a_mn  if x < cen1 else b_mx * x + a_mx
+            
+            nt = np.vectorize(normalise_tudo)
+
+            outVar[:] = nt(outVar[:])
+
           except Exception, e:
             raise e   
         elif var_name != 'knmi_provenance': 
