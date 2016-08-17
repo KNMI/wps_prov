@@ -237,10 +237,11 @@ class KnmiWpsProcess(WPSProcess):
             self.netcdf_w = fileO
 
             size = 0
+            
             if fileO is not None:
                 self.callback("Finished wps."+str(fileO), 70)
                 # try:
-                #     size = os.stat(fileO)
+                #     size = os.stat(fileO.filepath()).st_size
                 # except Exception, e:
                 #     content(71,info=str(e))
                

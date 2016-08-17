@@ -31,8 +31,9 @@ def generateContent(netcdf_w):
     for k in netcdf_w.ncattrs():
         v = netcdf_w.getncattr(k)
         if k not in ["bundle","lineage","bundle2","lineage2"]:
+            #content1[str(k).replace(".","_")] = str(v)
+            #content1[str(k)] = str(v)
             content1[str(k).replace(".","_")] = str(v)
-
     try:    
         for k, v in netcdf_w.variables.iteritems():   
             # print "var: "+str(k) #.replace(".","_")
@@ -519,11 +520,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
             #prov.output = netcdf_w
             #print netcdf_w
             callback(44)
-            #content of prov... move...
-            # for k in netcdf_w.ncattrs():
-            #   v = netcdf_w.getncattr(k)
-            #   if k not in ["bundle","lineage","bundle2","lineage2"]:
-            #     content1[str(k).replace(".","_")] = str(v) 
+
             content1 = generateContent(netcdf_w)
 
         except Exception, e:
@@ -1122,7 +1119,7 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
             netcdf_w.setncattr(  "institute_id" , "KNMI" )
             netcdf_w.setncattr(  "knmi_wps" , self.structure["identifier"] )
 
-            #processlib.createKnmiProvVar(netcdf_w)
+            processlib.createKnmiProvVar(netcdf_w)
             
             content1 = generateContent(netcdf_w)    
 

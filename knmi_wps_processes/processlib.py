@@ -62,10 +62,17 @@ def createKnmiProvVar(w_nc_fid):
     v = w_nc_fid.variables['knmi_provenance']
     #print v
   except Exception, e:
-    v = w_nc_fid.createVariable('knmi_provenance', np.str )
-    v.setncattr('bundle' ,'')
-    v.setncattr('lineage','')
-    v.setncattr('prov-dm','')
+    try:
+      v = w_nc_fid.createVariable('knmi_provenance', np.str )
+      v.setncattr('bundle' ,'')
+      v.setncattr('lineage','')
+      v.setncattr('prov-dm','')
+    except Exception, e:
+      v = w_nc_fid.createVariable('knmi_provenance', 'S1' )
+      v.setncattr('bundle' ,'')
+      v.setncattr('lineage','')
+      v.setncattr('prov-dm','')
+
 
 def appendHistory(global_vars, histStr):
       try:
