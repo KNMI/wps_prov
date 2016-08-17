@@ -95,7 +95,7 @@ class KnmiWpsProcess(WPSProcess):
 
         ''' initialise with KnmiWebProcessDescriptor '''
         self.fileOutPath1 = None
-        self.fileOutURL = None
+        self.fileOutURL = ""
         self.bundle = None
 
         self.output = None
@@ -193,8 +193,8 @@ class KnmiWpsProcess(WPSProcess):
         #self.callback(fileOutURL,10)
         self.callback(self.fileOutPath1,1)    
         # this can be extended for better debug...
-        def callback(b):
-            self.callback("Processing wps_knmi ",b)
+        def callback(b,info=""):
+            self.callback("Processing wps_knmi "+str(info),b)
 
         # PE used is dispel4py should be here
         # currently    
@@ -236,8 +236,14 @@ class KnmiWpsProcess(WPSProcess):
 
             self.netcdf_w = fileO
 
+            size = 0
             if fileO is not None:
                 self.callback("Finished wps."+str(fileO), 70)
+                # try:
+                #     size = os.stat(fileO)
+                # except Exception, e:
+                #     content(71,info=str(e))
+               
 
         except Exception, e:
             prov.errors(str(e))
@@ -247,27 +253,30 @@ class KnmiWpsProcess(WPSProcess):
 
         callback(80)
 
-        prov.content = content     
 
-        callback(90)
+        prov.content = { "prov:type" : "data_element" }
+        prov.content.update( content )
+        #prov.content = content
+
+        callback(90,info='finish provenance')
 
         prov.output = fileO  
         
         ''' provenance related can be moved'''
         try:
-            outputurl = self.inputs['netcdf_target'].getValue()
+            outputurl = str(self.fileOutURL)+self.inputs['netcdf_target'].getValue()
         except Exception, e:
-            outputurl = "wpsoutputs"
+            outputurl = str(self.fileOutURL)+"/wpsoutputs"
      
 
         ''' adds knmi_prov '''
-        prov.finish( source , outputurl )  
+        prov.finish( source , outputurl ,size)  
 
         ''' finalise prov and write to netcdf '''
         prov.closeProv()
 
         #logging.debug("self.fileOutURL == "+str(self.fileOutURL))
-        self.opendapURL.setValue(str(self.fileOutURL)+outputurl)
+        self.opendapURL.setValue(outputurl)
 
         ''' output to local json '''
         prov.writeMetadata('bundle.json')

@@ -483,7 +483,7 @@ class MetadataD4P(object):
         self.lineage['worker'] = hostname
 
   
-    def finish(self,nclinkOfSource,outputurl):
+    def finish(self,nclinkOfSource,outputurl,size):
         #bundle update
         #list(self.bundle['input']).append(data_input)
 
@@ -507,12 +507,12 @@ class MetadataD4P(object):
         self.lineage['streams'] = [ 
                                     {
                                         'annotations':[],
-                                        'content': [self.content],
+                                        'content': [self.content] ,
                                         'format':'json',
                                         'id': self.uuid ,
                                         'location': outputurl, # output url
                                         'port':'output',
-                                        'size':'666'
+                                        'size': str(size)
                                     }
                                   ]
         
@@ -546,17 +546,20 @@ class MetadataD4P(object):
                    oldlin = []
 
                 try:
-                   oldlin.append(json.loads(self.output.variables['knmi_provenance'].getncattr('lineage2')))
+                   #oldlin.append(json.loads(self.output.variables['knmi_provenance'].getncattr('lineage2')))
+                   oldlin += (json.loads(self.output.variables['knmi_provenance'].getncattr('lineage2')))
                 except Exception, e:
                    traceback.print_exc(file=sys.stdout)
                    print e
 
-                oldlin.append(self.lineage)
+                # oldlin.append(self.lineage)
+                oldlin += [self.lineage]
 
                 self.output.variables['knmi_provenance'].setncattr('lineage', json.dumps(oldlin) )
               
                 try:
-                    self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
+                    #self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov([self.lineage] , [self.bundle]) )
+                    self.output.variables['knmi_provenance'].setncattr('prov-dm', toW3Cprov( oldlin , [self.bundle]) )
                 except Exception, e:
                     self.output.variables['knmi_provenance'].setncattr('prov-dm', str(e) )
                 
