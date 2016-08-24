@@ -219,7 +219,8 @@ def weightNetCDF( source_name , weight , layer , target_name):
      
     for k in sorted(global_vars.keys()):
         v = global_vars[k] 
-        w_nc_fid.setncattr(  k , v )
+        if "DODS" not in k:
+          w_nc_fid.setncattr(  k , v )
 
     nc_fid.close()
 

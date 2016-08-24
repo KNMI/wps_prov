@@ -31,6 +31,7 @@ def generateContent(netcdf_w):
     for k in netcdf_w.ncattrs():
         v = netcdf_w.getncattr(k)
         if k not in ["bundle","lineage","bundle2","lineage2"]:
+            #if "DODS" not in k:
             #content1[str(k).replace(".","_")] = str(v)
             #content1[str(k)] = str(v)
             content1[str(k).replace(".","_")] = str(v)
@@ -61,6 +62,7 @@ def generateContent(netcdf_w):
         logging.debug(str(e))       
  
     return content1 
+
 
 
 
@@ -357,7 +359,8 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             target = fileOutPath+inputs['netcdf_target'].getValue()
 
-            netcdf_w = processlib.getWCS(  'https://climate4impact.eu/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
+#            netcdf_w = processlib.getWCS(  'https://climate4impact.eu/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
+            netcdf_w = processlib.getWCS(  'https://pc150396.knmi.nl:9443/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
                                 bbox , 
                                 inputs['time'].getValue(), 
                                 target,
