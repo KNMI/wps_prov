@@ -8,21 +8,6 @@ from clipc_combine_process import clipc_wp8_norm as cn
 import logging
 
 
-# logger = logging.getLogger('server_logger')
-# fh = logging.FileHandler('/nobackup/users/mihajlov/impactp/tmp/server.log')
-# logger.setLevel(logging.INFO);
-# fh.setLevel(logging.INFO)
-# logger.addHandler(fh)
-
-
-# def logger_info(str1):
-#   with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f:
-#     f.write(str(str1)+"\n")
-#   f.close()
-
-# logger_info("doit!")
-
-
 def checkVariable(nc_fid, variable, answer, count1):
       try:
           nc_fid.getncattr(variable)
@@ -418,9 +403,20 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
   return w_nc_fid
 
 
-import urllib2
+
 import urllib
 import xml.etree.ElementTree as et
+import requests
+
+def clientauthget(url,clientcert=None,capath=None):
+  if(capath == None):
+    raise ValueError('clientauthget: capath can not be None')
+    
+  if(clientcert == None):
+    resp = requests.get(url, verify=capath)
+  else:
+    resp = requests.get(url, cert=(clientcert,clientcert),verify=capath)
+  return resp.content
 
 def getWCS(   wcs_url1, 
               bbox, 
@@ -428,7 +424,8 @@ def getWCS(   wcs_url1,
               output_file,
               width=300,
               height=300,
-              certfile=None):
+              certfile=None,
+              capath=None):
  
 
       # Describe Coverage: used to id layer,
@@ -437,16 +434,7 @@ def getWCS(   wcs_url1,
       data_describe = urllib.urlencode(values_describe)
       request_describe =  wcs_url1 + "&" + str(data_describe)
 
-      #print request_describe
-
-      #print request_describe
-      if certfile != None:
-        opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
-        response = opener.open(request_describe)
-      else:
-        response = urllib2.urlopen( request_describe )
-              
-      xmlresponse = response.read()
+      xmlresponse = clientauthget(request_describe_url,certfile,capath)
       tree = et.fromstring(xmlresponse)
 
       for i in tree.iter():
@@ -485,15 +473,9 @@ def getWCS(   wcs_url1,
       logging.debug("WCS Request: "+request);
       logging.debug("WCS: writing to "+str(output_file));
     
-      if certfile != None:
-        opener = urllib.URLopener(key_file =certfile, cert_file = certfile)
-        response = opener.open(request)
-      else:
-        response = urllib2.urlopen( request )
-
       output = output_file
       out = open( output , 'wb')
-      out.write( bytes(response.read() ) )
+      out.write( bytes(clientauthget(request,certfile,capath) ) )
       out.close()
 
       return output_file

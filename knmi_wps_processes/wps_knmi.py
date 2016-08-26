@@ -216,7 +216,6 @@ class KnmiWpsProcess(WPSProcess):
         self.callback("Start wps.", 3)
 
         ''' run: process_execute_function, defined in descriptor '''
-        #with open('/nobackup/users/mihajlov/impactp/tmp/server.log','a') as f2:
         try:
             self.callback("Start wps.", 4)
             

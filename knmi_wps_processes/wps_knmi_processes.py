@@ -15,13 +15,6 @@ import logging
 # author: ANDREJ
 # tests provenance with knmi wps.
 
-        # def #logger_info(str1):
-        #   with open('/nobackup/users/mihajlov/impactp/tmp/server2.log','a') as f:
-        #     f.write(str(str1)+"\n")
-        #   f.close()
-
-        ##logger_info("doit! process_execute_function")
-
 
 def generateContent(netcdf_w):
 
@@ -236,8 +229,8 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
     ''' weighted copy and normalisation wps, versitile and used actively '''
 
     # via terminal
-    # http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=getcapabilities
-    # http://pc150396.knmi.nl:9080/impactportal/WPS?service=WPS&request=execute&identifier=knmi_weight&version=1.0.0&storeexecuteresponse=true&netcdf_source=COPY1.nc&weight=1.2&netcdf_target=X1.nc&variable=vDTR&tags=dre
+    # http://<host>/impactportal/WPS?service=WPS&request=getcapabilities
+    # http://<host>/impactportal/WPS?service=WPS&request=execute&identifier=knmi_weight&version=1.0.0&storeexecuteresponse=true&netcdf_source=COPY1.nc&weight=1.2&netcdf_target=X1.nc&variable=vDTR&tags=dre
 
 
     # override with validation process
@@ -349,7 +342,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
         source1 = [inputs['netcdf_source'].getValue()]
 
         certfile = os.environ['HOME']+'certs/creds.pem'
-
+        capath= os.environ.get('CAPATH')
         callback(20)
         # validator old                 
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
@@ -359,14 +352,22 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             target = fileOutPath+inputs['netcdf_target'].getValue()
 
-#            netcdf_w = processlib.getWCS(  'https://climate4impact.eu/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
-            netcdf_w = processlib.getWCS(  'https://pc150396.knmi.nl:9443/impactportal/adagucserver?source='+inputs['netcdf_source'].getValue(), 
+
+            
+            adagucservice = "https://climate4impact.eu/impactportal/adagucserver?";#Default adagucservice. Now checking SERVICE_ADAGUCSERVER env
+            
+            #Impactportal sets the right one in the env
+            if( os.environ.get('SERVICE_ADAGUCSERVER') != None ):
+              adagucservice = os.environ.get('SERVICE_ADAGUCSERVER')
+
+            netcdf_w = processlib.getWCS(  adagucservice+'source='+inputs['netcdf_source'].getValue(), 
                                 bbox , 
                                 inputs['time'].getValue(), 
                                 target,
                                 inputs['width'].getValue(), 
                                 inputs['height'].getValue(),
-                                certfile )
+                                certfile,
+                                capath)
 
                    
 
@@ -599,7 +600,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "title"      : "Combine input: Operation." ,
                             "type"       : type("String"),
                             "default"    : "add",
-                            "values"     : ["add","subtract","multiply","divide", "equal", "less" , "greater"]
+                            "values"     : ["add","subtract","multiply","divide", "equal", "less" , "greater","nutsextraction"]
                             } , 
                             { 
                             "identifier" : "tags" , 
@@ -795,7 +796,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         except Exception, e:
             content1 = {"copy_error": str(e) } 
 
-            traceback.print_exc(file='/nobackup/users/mihajlov/impactp/tmp/server.log') #sys.stderr)
+            traceback.print_exc(file='/tmp/wpsserver.log') #sys.stderr)
 
             raise e
         
