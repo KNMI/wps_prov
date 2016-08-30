@@ -403,6 +403,76 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
   return w_nc_fid
 
 
+def normaliseLinearNetCDF( source_name , b0 , a0 , layer , target_name):
+
+  ''' linear normalistaion, tudo request. '''
+  try:
+      nc_fid = netCDF4.Dataset( source_name , 'r') 
+  except Exception, e:
+      raise e
+ 
+  try:
+    w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
+    
+    content = dict()
+
+    for var_name, dimension in nc_fid.dimensions.iteritems():
+        w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+ 
+    for var_name, ncvar in nc_fid.variables.iteritems():
+        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+      
+        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+
+        outVar.setncatts(  ad  )
+        
+        # astype('f4')
+        if var_name == layer:   
+          try:
+            # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
+
+            # floats used
+            
+            a1 =float(a0)
+            b1 =float(b0)           
+            
+            def normalise_tudo(x):
+                return b1 * float(x) + a1 
+            
+            nt = np.vectorize(normalise_tudo)
+
+            outVar[:] = nt(ncvar[:])
+            
+          except Exception, e:
+            raise e   
+        elif var_name != 'knmi_provenance': 
+            try:
+                outVar[:] = ncvar[:]
+            except Exception as e:
+                outVar = ncvar
+            pass
+        
+    createKnmiProvVar(w_nc_fid)
+
+    global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+    
+
+    appendHistory(global_vars,"knmi normalise linear, a: "+a0+" b: "+b0+" from "+source_name) 
+     
+    for k in sorted(global_vars.keys()):
+        v = global_vars[k] 
+        w_nc_fid.setncattr(  k , v )
+
+    nc_fid.close()
+
+  except Exception, e:
+    raise e
+
+  return w_nc_fid
+
+
+
+
 
 import urllib
 import xml.etree.ElementTree as et

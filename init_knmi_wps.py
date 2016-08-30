@@ -55,6 +55,11 @@ class NormaliseAdvanced(wps_knmi.KnmiWpsProcess):
     def __init__(self):
         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiNormaliseAdvancedDescriptor())
 
+class NormaliseLinear(wps_knmi.KnmiWpsProcess):
+    # KnmiWebProcessDescriptor
+    def __init__(self):
+        wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiNormaliseLinearDescriptor())
+
 class AdvancedCombine(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):

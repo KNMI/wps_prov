@@ -353,14 +353,20 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
             target = fileOutPath+inputs['netcdf_target'].getValue()
 
 
-            
+            #adagucservice = "https://pc150396.knmi.nl:9443/impactportal/adagucserver?"
             adagucservice = "https://climate4impact.eu/impactportal/adagucserver?";#Default adagucservice. Now checking SERVICE_ADAGUCSERVER env
             
             #Impactportal sets the right one in the env
             if( os.environ.get('SERVICE_ADAGUCSERVER') != None ):
               adagucservice = os.environ.get('SERVICE_ADAGUCSERVER')
+            else:
+              callback(23 , info="no environment var=SERVICE_ADAGUCSERVER")
 
-            netcdf_w = processlib.getWCS(  adagucservice+'source='+inputs['netcdf_source'].getValue(), 
+            serviceLink =  adagucservice+'source='+inputs['netcdf_source'].getValue()
+
+            callback(25 , info=serviceLink)
+
+            netcdf_w = processlib.getWCS( serviceLink , 
                                 bbox , 
                                 inputs['time'].getValue(), 
                                 target,
@@ -368,8 +374,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                                 inputs['height'].getValue(),
                                 certfile,
                                 capath)
-
-                   
+  
 
             #content of prov... move...
             netcdf_w = netCDF4.Dataset( target , 'a')
@@ -641,7 +646,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         
         #inputs['']
-
+        callback(21)
         # fileOutPath
         ''' WCS '''
         try:
@@ -773,7 +778,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             traceback.print_exc(file=sys.stderr)
             raise e
 
-        callback(40)    
+        callback(48)    
         
         try:
             target = fileOutPath+knmiprocess.inputs['netcdf_target'].getValue()
@@ -784,7 +789,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             processlib.createKnmiProvVar(netcdf_w)
 
-            callback(50)
+            callback(58)
 
             #content of prov... move...
             # for k in netcdf_w.ncattrs():
@@ -800,7 +805,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             raise e
         
-        callback(90)    
+        callback(68)    
 
         #prov.content.append(content1)
         return content1 , source1, netcdf_w
@@ -1060,6 +1065,119 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
         self.processExecuteCallback = self.process_execute_function
 
         print self
+
+
+class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
+
+    # KnmiNormaliseAdvancedDescriptor
+
+    # override with validation process
+    def process_execute_function(self , inputs, callback,fileOutPath):
+        
+
+        callback(10)
+
+        logging.error(inputs) 
+
+        content1 = {}
+
+        source1 = [inputs['netcdf_source'].getValue()]
+
+        try:
+            netcdf_w = processlib.normaliseLinearNetCDF( inputs['netcdf_source'].getValue()     ,
+                                                inputs['b'].getValue()            ,
+                                                inputs['a'].getValue()            ,
+                                                inputs['variable'].getValue()     ,
+                                                fileOutPath+inputs['netcdf_target'].getValue() )   
+
+
+            #content of prov... move...
+            # for k in netcdf_w.ncattrs():
+            #   v = netcdf_w.getncattr(k)
+            #   if k not in ["bundle","lineage"]:
+            #     content1[str(k).replace(".","_")] = str(v) 
+
+            content1 = generateContent(netcdf_w)      
+
+        except Exception, e:
+            content1 = {"copy_error": str(e) } 
+            logging.error (netcdf_w)
+            logging.error (content1)
+
+            raise e
+
+        return content1 , source1, netcdf_w
+
+
+
+    def __init__( self ):
+
+        self.structure = {}      
+        self.inputsTuple = []
+
+        self.structure["identifier"] = "knmi_norm_linear"   # = 'wps_simple_indice', # only mandatary attribute = same file name
+        self.structure["title"]= "Normalise using a linear equation" # = 'SimpleIndices',
+        self.structure["abstract"] = "KNMI WPS Process: CLIPC Normalise Linear." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["version"] = "1.0.0"
+        self.structure["storeSupported"] = True
+        self.structure["statusSupported"] = True
+        self.structure["grassLocation"] = False
+        self.structure["metadata"] = "METADATA D4P"
+
+        # input tuple describes addLiteralInput, values
+        self.inputsTuple = [
+                            { 
+                            "identifier" : "netcdf_source" , 
+                            "title"      : "norm input: Input netCDF opendap." ,
+                            "type"       : type("String"),
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "abstract"   : "application/netcdf",
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "b" , 
+                            "title"      : "norm input: B input.",
+                            "type"       : type(float),
+                            "default"    : "1.0" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "a" , 
+                            "title"      : "norm input: A input.",
+                            "type"       : type(float),
+                            "default"    : "0.0" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "variable" , 
+                            "title"      : "norm input: VariableName of netCDF layer." ,
+                            "type"       : type("String"),
+                            "default"    : "vDTR" ,
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "netcdf_target" , 
+                            "title"      : "norm input: Output netCDF." ,
+                            "type"       : type("String"),
+                            "default"    : "NORM_LINEAR.nc",
+                            "values"     : None
+                            } ,
+                            { 
+                            "identifier" : "tags" , 
+                            "title"      : "norm input: User Defined Tags CLIPC user tags." ,
+                            "type"       : type("String"),
+                            "default"    : "provenance_research_knmi",
+                            "values"     : None
+                            }                   
+                          ]
+
+
+        self.processExecuteCallback = self.process_execute_function
+
+        print self
+
+
+
 
 
 import subprocess
