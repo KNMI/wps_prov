@@ -6,6 +6,9 @@ from pprint import pprint
 import numpy as np
 from clipc_combine_process import clipc_wp8_norm as cn
 import logging
+logging.info("START")
+
+
 
 
 def checkVariable(nc_fid, variable, answer, count1):
@@ -479,13 +482,23 @@ import xml.etree.ElementTree as et
 import requests
 
 def clientauthget(url,clientcert=None,capath=None):
+  logging.info("clientauthget")
   if(capath == None):
     raise ValueError('clientauthget: capath can not be None')
-    
-  if(clientcert == None):
-    resp = requests.get(url, verify=capath)
-  else:
-    resp = requests.get(url, cert=(clientcert,clientcert),verify=capath)
+  capath=False  
+  logging.info("Starting request ["+str(url)+"]")
+  logging.info("Starting request ["+str(clientcert)+"]")
+  try:
+    if(clientcert == None):
+      resp = requests.get(url, verify=capath)
+    else:
+      resp = requests.get(url, cert=(clientcert,clientcert),verify=capath)
+    logging.info("Request succeeded")
+  except Exception, e:
+    logging.info("error")
+    logging.info(e)
+    raise
+
   return resp.content
 
 def getWCS(   wcs_url1, 
@@ -496,15 +509,16 @@ def getWCS(   wcs_url1,
               height=300,
               certfile=None,
               capath=None):
- 
+      logging.info("getWCS")
 
       # Describe Coverage: used to id layer,
       # data also available in getCapabilities...
       values_describe = [  ('SERVICE' , 'WCS'), ('REQUEST' , 'DescribeCoverage') ]
       data_describe = urllib.urlencode(values_describe)
       request_describe =  wcs_url1 + "&" + str(data_describe)
+      logging.info(request_describe)
 
-      xmlresponse = clientauthget(request_describe_url,certfile,capath)
+      xmlresponse = clientauthget(request_describe,certfile,capath)
       tree = et.fromstring(xmlresponse)
 
       for i in tree.iter():

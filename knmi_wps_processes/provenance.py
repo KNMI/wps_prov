@@ -151,6 +151,8 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
         con = Namespace("con", "http://knmi.nl/control")
         g.add_namespace("dcterms", "http://purl.org/dc/terms/")
         
+
+
         'specify bundle'
         bundle=None
         for trace in bundl:
@@ -541,7 +543,7 @@ class MetadataD4P(object):
                 self.output.variables['knmi_provenance'].setncattr('bundle' , [json.dumps(self.bundle)])
 
                 try:
-                   oldlin = json.loads(self.output.variables['knmi_provenance'].getncattr('lineage'))
+                   oldlin +=json.loads(self.output.variables['knmi_provenance'].getncattr('lineage'))
                 except Exception, e:
                    oldlin = []
 

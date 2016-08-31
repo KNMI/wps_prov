@@ -24,10 +24,10 @@ def generateContent(netcdf_w):
     for k in netcdf_w.ncattrs():
         v = netcdf_w.getncattr(k)
         if k not in ["bundle","lineage","bundle2","lineage2"]:
-            #if "DODS" not in k:
+            if "DODS" not in k:
             #content1[str(k).replace(".","_")] = str(v)
             #content1[str(k)] = str(v)
-            content1[str(k).replace(".","_")] = str(v)
+                content1[str(k).replace(".","_")] = str(v)
     try:    
         for k, v in netcdf_w.variables.iteritems():   
             # print "var: "+str(k) #.replace(".","_")
@@ -389,8 +389,8 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                  
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            logging.error (netcdf_w)
-            logging.error (content1)
+            logging.info (netcdf_w)
+            logging.info (content1)
 
             raise e
 
