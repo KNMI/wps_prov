@@ -187,7 +187,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_copy"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "Copy netcdf" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC netcdf metadata validator. Checks netCDF global ncattributes for relevant metadata fields." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["abstract"] = "KNMI WPS Process: Simple Copy" #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -391,8 +391,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
             content1 = {"copy_error": str(e) } 
             logging.info (netcdf_w)
             logging.info (content1)
-
-            raise e
+            raise
 
         return content1 , source1, netcdf_w
 
