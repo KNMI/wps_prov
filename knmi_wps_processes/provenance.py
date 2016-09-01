@@ -302,11 +302,20 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                     if isinstance(y, dict):
                         val=None
                         for key in y:
+
+                            '''
+                            need to fix this...
+                            '''
+
                             try: 
                                 val = num(y[key]).replace("&"," ")                       
                             except Exception,e:
                                 val = escape(str(y[key]))
                             
+                            '''
+                             escape( "< & >")
+                            '''
+
                             if ':' in key:
                                 dic.update({key: val})
                             else:
@@ -337,8 +346,8 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
             return g.serialize(format='xml')
 
 # Metadata bridge to D4P
-# Currently only used to log locally
 # 
+
 class MetadataD4P(object):
 
     # {u'_id': u'RDWD_orfeus-as-85724-d140e70c-0222-11e6-92ad-f45c89acf865',
