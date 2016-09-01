@@ -168,7 +168,8 @@ class KnmiWpsProcess(WPSProcess):
         homedir = os.environ['HOME']
         os.chdir(homedir)
 
-        #self.callback( "EXECUTE...",0)
+
+        self.callback( "EXECUTE "+homedir,0)
 
         ''' file path based on oauth and cert user.'''
         if self.fileOutPath1 is None:
@@ -205,7 +206,7 @@ class KnmiWpsProcess(WPSProcess):
         # use prov call back later... each start creates lineage info
         prov = provenance.MetadataD4P(  name=self.identifier , 
                                         description="Povenance using D4P for "+self.abstract ,
-                                        username="andrej", 
+                                        username=homedir, #"andrej", 
                                         inputs=self.inputs ,
                                         bundle0=self.bundle 
                                         ) #does wps provide a user id...
