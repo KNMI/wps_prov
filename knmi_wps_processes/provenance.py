@@ -19,6 +19,8 @@ import csv
 import StringIO
 import sys, traceback #traceback.print_exc(file=sys.stdout)
 
+from xml.sax.saxutils import escape
+
 import knmi_wps_processes
 ##########################################
 # import knmi_wps_processes.prov as prov
@@ -137,6 +139,19 @@ def writePOST(provenance_json):
           response.reason, response, response.read())
     connection.close()
     return None
+'''
+def num(s):
+    try:
+        return int(s)
+    except Exception:
+        try:
+            return float(s)
+        except Exception:
+            return str(s)
+'''
+def num(s):
+    return str(s)       
+
 
 def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
         
@@ -269,7 +284,7 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                         elif key == 'content':
                             None
                         else:
-                            parent_dic.update({vc[key]: str(x[key])})
+                            parent_dic.update({ vc[key] : str(x[key])})
                             
                            
             
@@ -287,17 +302,15 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                     if isinstance(y, dict):
                         val=None
                         for key in y:
-                        
                             try: 
-                                val =num(y[key])
-                                
+                                val = num(y[key]).replace("&"," ")                       
                             except Exception,e:
-                                val =str(y[key])
+                                val = escape(str(y[key]))
                             
                             if ':' in key:
                                 dic.update({key: val})
                             else:
-                                dic.update({vc[key]: val})
+                                dic.update({ vc[key] : val })
                     else:
                         dic={vc['text']:y}
                 
@@ -451,7 +464,7 @@ class MetadataD4P(object):
 
         params = []
         for key in inputs.keys():
-            params.append( { 'key': key , 'val':inputs[key] } )
+            params.append( { 'key': key , 'val': num(inputs[key]) } )
 
         self.lineage['_id'] = _id #'PE_square_write_orfeus-as-85724-d27f8c4a-0222-11e6-8f71-f45c89acf865'
         self.lineage['actedOnBehalfOf'] = name #'PE_square_8'
@@ -505,11 +518,16 @@ class MetadataD4P(object):
             self.lineage['derivationIds'] .append( { "DerivedFromDatasetID"         : str(did) , 
                                                      "TriggeredByProcessIterationID": None } )
         
+
+        json_content = {}
+        for k,v in self.content.items():
+            json_content[k] = num(v) 
+
         self.uuid =  str(self.process_id)+str(uuid.uuid4()) # uuid of netcdf better then generated...
         self.lineage['streams'] = [ 
                                     {
                                         'annotations':[],
-                                        'content': [self.content] ,
+                                        'content': [json_content] ,
                                         'format':'json',
                                         'id': self.uuid ,
                                         'location': outputurl, # output url

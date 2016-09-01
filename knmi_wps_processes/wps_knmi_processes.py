@@ -14,7 +14,7 @@ import logging
 # run from run.wps.here.py (this allows the local cgi to be used...)
 # author: ANDREJ
 # tests provenance with knmi wps.
-
+from xml.sax.saxutils import escape
 
 def generateContent(netcdf_w):
 
@@ -24,27 +24,30 @@ def generateContent(netcdf_w):
     for k in netcdf_w.ncattrs():
         v = netcdf_w.getncattr(k)
         if k not in ["bundle","lineage","bundle2","lineage2"]:
-            if "DODS" not in k:
+            #logging.info( str(k+"="+v) )
+            if ("DODS" in k) or ("adaguc" in k) :
+                logging.info("noneed")
             #content1[str(k).replace(".","_")] = str(v)
             #content1[str(k)] = str(v)
-                content1[str(k).replace(".","_")] = str(v)
+            else:
+                content1[  str(k).replace(".","_") ] = str(v)
     try:    
         for k, v in netcdf_w.variables.iteritems():   
             # print "var: "+str(k) #.replace(".","_")
             if k not in ["knmi_provenance"]:
                 #content1["variable_"+str(k)] = str(v.short_name)
                 for x in v.ncattrs():
-                    content1["variable_"+str(k)+"_"+x] = str(v.getncattr(x))
+                    content1["variable_"+str(k)+"_"+x] = v.getncattr(x)
                 
                 # print v.shape
                 try:
-                    content1["variable_"+str(k)+"_shape"] = str(v.shape)
+                    content1["variable_"+str(k)+"_shape"] = v.shape
                 except Exception, e:
                     pass
                 
                 # print v.size
                 try:
-                    content1["variable_"+str(k)+"_size"]  = str(v.size)
+                    content1["variable_"+str(k)+"_size"]  = v.size
                 except Exception, e:
                     pass
 

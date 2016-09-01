@@ -203,10 +203,12 @@ class KnmiWpsProcess(WPSProcess):
 
         ''' create metadata object, initiate bundle if not existing '''
         # bundle created here
+        username = homedir.split("/")[-2]
+
         # use prov call back later... each start creates lineage info
         prov = provenance.MetadataD4P(  name=self.identifier , 
                                         description="Povenance using D4P for "+self.abstract ,
-                                        username=homedir, #"andrej", 
+                                        username=username, #"andrej", 
                                         inputs=self.inputs ,
                                         bundle0=self.bundle 
                                         ) #does wps provide a user id...
