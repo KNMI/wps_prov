@@ -118,8 +118,6 @@ def writePOST(provenance_json):
     # out = ast.literal_eval(prov) 
 
     out = prov 
-
-    pprint(out)
    
     params = urllib.urlencode({'prov': json.dumps(out)})
 
@@ -308,13 +306,17 @@ def toW3Cprov(ling,bundl,format='w3c-prov-xml'):
                             '''
 
                             try: 
-                                val = num(y[key]).replace("&"," ")                       
+                                # val = (num(y[key])) #.replace(">"," ")
+
+                                # g.serizlize(format=xml) effects this file.
+                                val = (num(y[key])).replace(">"," gt ").replace("&"," and ").replace("<"," ls ")
                             except Exception,e:
-                                val = escape(str(y[key]))
+                                val = (str(y[key]))
                             
                             '''
                              escape( "< & >")
                             '''
+                            #print key +": "+val
 
                             if ':' in key:
                                 dic.update({key: val})

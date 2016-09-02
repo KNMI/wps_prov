@@ -14,7 +14,6 @@ import logging
 # run from run.wps.here.py (this allows the local cgi to be used...)
 # author: ANDREJ
 # tests provenance with knmi wps.
-from xml.sax.saxutils import escape
 
 def generateContent(netcdf_w):
 
@@ -25,10 +24,12 @@ def generateContent(netcdf_w):
         v = netcdf_w.getncattr(k)
         if k not in ["bundle","lineage","bundle2","lineage2"]:
             #logging.info( str(k+"="+v) )
+            '''
+            This must be revisited, carries only a quick fix. 
+            '''
+
             if ("DODS" in k) or ("adaguc" in k) :
-                logging.info("noneed")
-            #content1[str(k).replace(".","_")] = str(v)
-            #content1[str(k)] = str(v)
+                logging.info("no need: "+str(k))
             else:
                 content1[  str(k).replace(".","_") ] = str(v)
     try:    
@@ -203,7 +204,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source" , 
                             "title"      : "Copy input: Input netCDF." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/CWD/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/CWD_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"                            
                             } ,
@@ -793,11 +794,6 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
             callback(58)
 
-            #content of prov... move...
-            # for k in netcdf_w.ncattrs():
-            #   v = netcdf_w.getncattr(k)
-            #   if k not in ["bundle","lineage","bundle2","lineage2"]:
-            #     content1[str(k).replace(".","_")] = str(v) 
             content1 = generateContent(netcdf_w)    
 
         except Exception, e:
@@ -976,12 +972,6 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
 
 
-            #content of prov... move...
-            # for k in netcdf_w.ncattrs():
-            #   v = netcdf_w.getncattr(k)
-            #   if k not in ["bundle","lineage"]:
-            #     content1[str(k).replace(".","_")] = str(v) 
-
             content1 = generateContent(netcdf_w)      
 
         except Exception, e:
@@ -1093,12 +1083,6 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
                                                 fileOutPath+inputs['netcdf_target'].getValue() )   
 
 
-            #content of prov... move...
-            # for k in netcdf_w.ncattrs():
-            #   v = netcdf_w.getncattr(k)
-            #   if k not in ["bundle","lineage"]:
-            #     content1[str(k).replace(".","_")] = str(v) 
-
             content1 = generateContent(netcdf_w)      
 
         except Exception, e:
@@ -1208,6 +1192,7 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
 
         ratio = inputs['ratio'].getValue()
         freq = inputs['frequency'].getValue()
+        ave = inputs['average'].getValue()
 
         target = fileOutPath+inputs['netcdf_target'].getValue()
         source1 = [sourceA,sourceB]
@@ -1222,35 +1207,66 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
             # os.environ['PYWPS_PROCESSES']
 
             loc = '/usr/people/mihajlov/climexp'
+            # script = './climexp/correlatefield '+loc+sourceA+' '+loc+sourceB+' '+freq+' '+ratio+' '+ave+' 3 '+str(target)
+
             # process = Popen(cmd, stdout=PIPE, stderr=PIPE, env=envhpc, shell=True)
-            script = loc+'/bin/correlatefield '+loc+sourceA+' '+loc+sourceB+' '+freq+' '+ratio+' ave '+str(target)
+            script = loc+'/bin/correlatefield '+sourceA+' '+sourceB+' '+freq+' '+ratio+' '+ave+' 3 '+str(target)
 
             callback(22,info=script)
 
-            process = subprocess.Popen( script  , shell=True) #,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE
-
+            try:
+                process = subprocess.Popen( script  , shell=True).communicate() 
+                callback(23,info=str(process))
+            except Exception, e:
+                callback(23,info="Popen process failed")
+                raise e
             
+            #,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE
 
-            process.wait()
+                       
+            #outs, errs = process.communicate()
+
+           
+            #callback(24,info="errs: "+errs)
+
+            #process.wait()
+
             #  /usr/people/mihajlov/climexp/
 
-            logging.info( target )
-
-            callback(23,info=target)
+            callback(25,info=target)
 
             netcdf_w = netCDF4.Dataset(target,'a')
 
-            netcdf_w.setncattr(  "institute_id" , "KNMI" )
+            ''' metadata appended, inspire worthy '''
+            netcdf_w.setncattr(  "title"        , "KNMI Climate Explorer correlate field service output" )
+            netcdf_w.setncattr(  "summary"      , "KNMI Climate Explorer correlate field service output "+sourceA+" for "+sourceB )
+            netcdf_w.setncattr(  "keywords"     , "climate,correlation,wps_knmi" )
+            netcdf_w.setncattr(  "institute_id" , "KNMI" )            
+            netcdf_w.setncattr(  "contact"      , "oldenborgh@knmi.nl" )
+            netcdf_w.setncattr(  "date_created" , datetime.now().isoformat() )
+
+            # for sinspire...
+            #netcdf_w.setncattr(  "time_coverage_start" , " " )
+            #netcdf_w.setncattr(  "time_coverage_end"   , " " )
+            #netcdf_w.setncattr(  "geospatial_lat_min"  , " " )
+            #netcdf_w.setncattr(  "geospatial_lat_max"  , " " )
+            #netcdf_w.setncattr(  "geospatial_lon_min"  , " " )
+            #netcdf_w.setncattr(  "geospatial_lon_max"  , " " )
+            #netcdf_w.setncattr(  "geospatial_lat_resolution" , "1 m" )
+            #netcdf_w.setncattr(  "geospatial_lon_resolution" , "1 m" )
+
             netcdf_w.setncattr(  "knmi_wps" , self.structure["identifier"] )
 
+            callback(24,info="creating knmi prov var")
             processlib.createKnmiProvVar(netcdf_w)
             
             content1 = generateContent(netcdf_w)    
 
         except Exception, e:
             content1 = {"copy_error": str(e) , "target":target , "process" : process} 
-            logging.error (netcdf_w)
-            logging.error (content1)
+            logging.info(netcdf_w)
+            logging.info(content1)
+            logging.info(str(e))
 
             raise e
 
@@ -1279,7 +1295,7 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source1" , 
                             "title"      : "Copy input: Input 1 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "/DATA/cru_ts3.22.1901.2013.pre.dat.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/climate_explorer/cru_ts3.22.1901.2013.pre.dat.nc" ,
                             "abstract"   : "application/netcdf",
                             "values"     : None
                             } ,
@@ -1287,35 +1303,41 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source2" , 
                             "title"      : "Copy input: Input 2 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "/DATA/nino3.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/climate_explorer/nino3.nc" ,
                             "abstract"   : "application/netcdf",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "netcdf_target" , 
-                            "title"      : ": Output netCDF." ,
+                            "title"      : "Output netCDF." ,
                             "type"       : type("String"),
                             "default"    : "out.nc",
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "frequency" , 
-                            "title"      : "frequency" ,
+                            "title"      : "Frequency" ,
                             "type"       : type("String"),
-                            "default"    : "1.0" ,
+                            "default"    : "mon" ,
                             "values"     : None
                             } ,
                             { 
                             "identifier" : "ratio" , 
-                            "title"      : "ratio" ,
+                            "title"      : "Ratio" ,
                             "type"       : type("String"),
                             "default"    : "1:12" ,
                             "values"     : None
                             } ,
-
+                            { 
+                            "identifier" : "average" , 
+                            "title"      : "Average" ,
+                            "type"       : type("String"),
+                            "default"    : "ave" ,
+                            "values"     : None
+                            } ,
                             { 
                             "identifier" : "tags" , 
-                            "title"      : ": User Defined Tags CLIPC user tags." ,
+                            "title"      : "User Defined Tags CLIPC user tags." ,
                             "type"       : type("String"),
                             "default"    : "provenance_research_knmi",
                             "values"     : None
