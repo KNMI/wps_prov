@@ -1203,6 +1203,8 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
 
             callback(21)
 
+            dirscript = os.environ['PYWPS_PROCESSES']
+
             #PYWPS_PROCESSES
             # os.environ['PYWPS_PROCESSES']
 
@@ -1210,7 +1212,7 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
             # script = './climexp/correlatefield '+loc+sourceA+' '+loc+sourceB+' '+freq+' '+ratio+' '+ave+' 3 '+str(target)
 
             # process = Popen(cmd, stdout=PIPE, stderr=PIPE, env=envhpc, shell=True)
-            script = loc+'/bin/correlatefield '+sourceA+' '+sourceB+' '+freq+' '+ratio+' '+ave+' 3 '+str(target)
+            script = dirscript+'/climexp/correlatefield '+sourceA+' '+sourceB+' '+freq+' '+ratio+' '+ave+' 3 '+str(target)
 
             callback(22,info=script)
 
