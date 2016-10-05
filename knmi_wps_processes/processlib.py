@@ -169,25 +169,30 @@ def weightNetCDF( source_name , weight , layer , target_name):
             w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
 
         for var_name, ncvar in nc_fid.variables.iteritems():
-            outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
-          
-            ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
 
-            outVar.setncatts(  ad  )
-            
             # astype('f4')
             if var_name == layer:   
               try:
+
+                outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
 
                 if weight in cn.nrm.keys():
                   outVar[:] = cn.norm(ncvar[:],weight)
                 else:  
                   outVar[:] = float(weight) * ncvar[:]
+
               except Exception, e:
                 raise e
-            elif var_name != 'knmi_provenance': 
+
+            else:
+               outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+
+            if var_name != 'knmi_provenance': 
               outVar[:] = ncvar[:]
             
+            ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+            outVar.setncatts(  ad  )  
+
         createKnmiProvVar(w_nc_fid)
         
         global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
@@ -242,30 +247,41 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
       nc_fid2 = netCDF4.Dataset( source_name2 , 'r') 
 
       try:
+
         w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
  
         content = dict()
 
-        for var_name, dimension in nc_fid1.dimensions.iteritems():
-           
-            w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+        ''' copy variables '''
+        for var_name, dimension in nc_fid1.dimensions.iteritems():        
+          w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
 
-        for var_name, ncvar in nc_fid1.variables.iteritems():
-          
+        for var_name, ncvar in nc_fid1.variables.iteritems():       
+          if var_name == layer1:
+            outVar = w_nc_fid.createVariable(var_name, 'f4' , ncvar.dimensions)
+
+            ''' combine here '''
+            var1 = ncvar[:]
+            var2 = nc_fid2.variables[layer2][:]
+
+            ''' convert to f4 and operation '''
+            outVar[:] = operation( var1.astype('f4') , var2.astype('f4') )  
+            outVar[:].units = 'combined'
+            outVar[:].standard_name = 'combined '+layer1+' '+str(operation)+' '+layer2
+
+          else:
             outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
-          
-            ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
 
-            outVar.setncatts(  ad  )
-
-            # astype('f4')
-            if var_name == layer1:
-              outVar[:] = operation(ncvar[:] , nc_fid2.variables[layer2][:])  
-            elif var_name != 'knmi_provenance' :
+            ''' knmi prov not copied '''
+            if var_name != 'knmi_provenance' :
               outVar[:] = ncvar[:]
-
+          
+          ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+          outVar.setncatts(  ad  )     
+  
         createKnmiProvVar(w_nc_fid)
 
+        ''' combine global variables '''
         global_vars  = dict((k , nc_fid1.getncattr(k) ) for k in nc_fid1.ncattrs() )
         global_vars2 = dict((k , nc_fid2.getncattr(k) ) for k in nc_fid2.ncattrs() )
 
@@ -275,7 +291,7 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
         except Exception, e:
           global_vars['history'] = histStr
 
-
+        ''' provenance variable fill'''
         for k in sorted(global_vars.keys()):
             v = global_vars[k] 
             if k in ['lineage','bundle']:
