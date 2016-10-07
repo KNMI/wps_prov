@@ -231,8 +231,6 @@ class KnmiWpsProcess(WPSProcess):
             
             self.callback(str(self.fileOutPath1), 4)
             
-
-
             ''' PROCESS OUTPUTs '''
             content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
 

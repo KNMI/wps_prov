@@ -24,12 +24,12 @@ status = MyStatus()
 ''' https://dev.knmi.nl/projects/clipccombine/wiki '''
 
 
-
+'''
 class Validate(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):
         wps_knmi.KnmiWpsProcess.__init__(self , wps_knmi_processes.KnmiClipcValidationDescriptor() )
-     
+'''     
 class Copy(wps_knmi.KnmiWpsProcess):
     # KnmiWebProcessDescriptor
     def __init__(self):

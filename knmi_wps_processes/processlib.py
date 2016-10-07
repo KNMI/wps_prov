@@ -68,6 +68,8 @@ def appendHistory(global_vars, histStr):
       except Exception, e:
         global_vars['history'] = histStr
 
+
+
 def copyNetCDF( source_name , target_name):
   try:
     nc_fid = netCDF4.Dataset( source_name , 'r')  
@@ -90,35 +92,12 @@ def copyNetCDF( source_name , target_name):
 
           outVar[:] = ncvar[:]
 
-      #if w_nc_fid.variables['knmi_provenance'] is None:
-      #    w_nc_fid.createVariable('knmi_provenance', 'S' , () )
-      #if 'knmi_provenance' not in w_nc_fid.variables.iteritems():
       createKnmiProvVar(w_nc_fid)
 
       global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
       
-      #pprint(global_vars)
-
-      # bundStr = json.dumps(prov.bundle)
-
-      # #print bundStr
-      # #print type(global_vars)
-
-      # try:
-      #   global_vars['bundle'] = global_vars['bundle']+"\n"+ bundStr
-      # except Exception, e:
-      #   print e
-      #   global_vars['bundle'] = bundStr
-
-      # histStr = "copyNetCDF knmi: "+target_name+" to "+source_name
-      # try:
-      #   global_vars['history'] = global_vars['history']+"\n"+histStr
-      # except Exception, e:
-      #   global_vars['history'] = histStr
       appendHistory(global_vars,"knmi copy from "+source_name)
       
-      #pprint(global_vars)
-
       for k in sorted(global_vars.keys()):
           v = global_vars[k] 
           w_nc_fid.setncattr(  k , v )
@@ -133,8 +112,6 @@ def copyNetCDF( source_name , target_name):
     print "exception reading: ",source_name
     raise e
 
-  
-
   return w_nc_fid
 
 
@@ -143,165 +120,139 @@ def copyNetCDF( source_name , target_name):
 def weightNetCDF( source_name , weight , layer , target_name):
 
   ''' weighted netcdf function, allows normalistaion and weight '''
-  try:
-      nc_fid = netCDF4.Dataset( source_name , 'r') 
-  except Exception, e:
-    raise e
 
-  try:
-    w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
+  nc_fid = netCDF4.Dataset( source_name , 'r') 
 
-    content = dict()
+  w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
 
-    for var_name, dimension in nc_fid.dimensions.iteritems():
-        w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+  content = dict()
 
 
-    for var_name, ncvar in nc_fid.variables.iteritems():
-        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+  for var_name, dimension in nc_fid.dimensions.iteritems():
+      w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+
+  for var_name, ncvar in nc_fid.variables.iteritems():
+      #outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+      #ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+      #outVar.setncatts(  ad  ) 
+
+    if var_name == layer:   
+      outVar = w_nc_fid.createVariable(var_name, 'f4' , ncvar.dimensions, fill_value=np.nan)
+
+      ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() if not str(k).startswith("_"))
+
+      outVar.setncatts(  ad ) 
+
+      if weight in cn.nrm.keys():
+        outVar[:] = cn.norm(ncvar[:].astype('f4'),weight)
+      else:  
+        outVar[:] = float(weight) * ncvar[:].astype('f4')
+
+    else:
+      outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+      ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+      outVar.setncatts(  ad  ) 
       
-        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+      if var_name != 'knmi_provenance': 
+        outVar[:] = ncvar[:] 
+              
+  createKnmiProvVar(w_nc_fid)
 
-        outVar.setncatts(  ad  )
-        
-        # astype('f4')
-        if var_name == layer:   
-          try:
-            if weight in cn.nrm.keys():
-              outVar[:] = cn.norm(ncvar[:],weight)
-            else:  
-              outVar[:] = float(weight) * ncvar[:]
-          except Exception, e:
-            raise e
-        elif var_name != 'knmi_provenance': 
-          try:
-            outVar[:] = ncvar[:]
-          except Exception as e:
-            """ Fill value for string is not oK """
-            outVar = ncvar
-            pass
-        
-    createKnmiProvVar(w_nc_fid)
+  global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+  
+  appendHistory(global_vars,"knmi scale weight:"+weight+" data:"+source_name)  
+   
+  for k in sorted(global_vars.keys()):
+      v = global_vars[k] 
+      if "DODS" not in k:
+        w_nc_fid.setncattr(  k , v )
 
-    global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
-    
-    #pprint(global_vars)
-
-    # bundStr = json.dumps(prov.bundle)
-    
-    # #print bundStr
-    # #print type(global_vars)
-
-    # try:
-    #   global_vars['bundle'] = global_vars['bundle']+"\n"+ bundStr
-        # except Exception, e:
-    #   print e
-    #   global_vars['bundle'] = bundStr
-
-    # histStr = "weightNetCDF knmi: "+target_name+"weight of "+weight+" to "+source_name
-    # try:
-    #   global_vars['history'] = global_vars['history']+"\n"+histStr
-    # except Exception, e:
-    #   global_vars['history'] = histStr
-    appendHistory(global_vars,"knmi scale weight:"+weight+" data:"+source_name)  
-     
-    for k in sorted(global_vars.keys()):
-        v = global_vars[k] 
-        if "DODS" not in k:
-          w_nc_fid.setncattr(  k , v )
-
-    nc_fid.close()
-
-  except Exception, e:
-    raise e
-
+  nc_fid.close()
+  
   return w_nc_fid
 
 
 def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, operation):
 
-  #print "weightNetCDF"
-  # print source_name
-  # print weight
-  # print target_name
-  # print "START"
+  nc_fid1 = netCDF4.Dataset( source_name1 , 'r') 
 
-  try:
-      nc_fid1 = netCDF4.Dataset( source_name1 , 'r') 
-      nc_fid2 = netCDF4.Dataset( source_name2 , 'r') 
+  nc_fid2 = netCDF4.Dataset( source_name2 , 'r') 
 
-      try:
-        w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
- 
-        content = dict()
+  w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
 
-        for var_name, dimension in nc_fid1.dimensions.iteritems():
-           
-            w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+  content = dict()
 
-        for var_name, ncvar in nc_fid1.variables.iteritems():
-          
-            outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
-          
-            ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+  ''' copy variables '''
+  for var_name, dimension in nc_fid1.dimensions.iteritems():        
+    w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
 
-            outVar.setncatts(  ad  )
+  for var_name, ncvar in nc_fid1.variables.iteritems():       
+    logging.info(var_name)
 
-            # astype('f4')
-            if var_name == layer1:
-                outVar[:] = operation(ncvar[:] , nc_fid2.variables[layer2][:])  
-            elif var_name != 'knmi_provenance' :
-                try:
-                    outVar[:] = ncvar[:]
-                except Exception as e:
-                    outVar = ncvar
-                pass
+    if var_name == layer1:
+      #outVar = w_nc_fid.createVariable(var_name, 'f4' , ncvar.dimensions)
+      outVar = w_nc_fid.createVariable( var_name , 'f4' , ncvar.dimensions , fill_value=np.nan)
 
-        createKnmiProvVar(w_nc_fid)
+      ''' combine here '''
+      var1 = ncvar[:]
+      var2 = nc_fid2.variables[layer2][:]
 
-        global_vars  = dict((k , nc_fid1.getncattr(k) ) for k in nc_fid1.ncattrs() )
-        global_vars2 = dict((k , nc_fid2.getncattr(k) ) for k in nc_fid2.ncattrs() )
+      #logging.info(var1)
+      #logging.info(var2)
 
-        # histStr = "COMBINE NetCDF knmi: "+target_name+"weight of "+source_name1+" to "+source_name2
-        # try:
-        #   global_vars['history'] = global_vars['history']+"\n"+histStr
-        # except Exception, e:
-        #   global_vars['history'] = histStr
-        appendHistory(global_vars,"knmi combine source1:"+source_name1+" and source2:"+source_name2)  
-  
-          
+      ''' convert to f4 and operation '''
+      outVar[:] = operation( var1.astype('f4') , var2.astype('f4') ) 
+   
+      logging.info(str(operation))
 
-        try:
-          for k in sorted(global_vars.keys()):
-              v = global_vars[k] 
-              if k in ['lineage','bundle']:
-                w_nc_fid.variables['knmi_provenance'].setncattr(  k , v )
-              else:
-                w_nc_fid.setncattr(  k , v )
+      ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() if not str(k).startswith("_")) 
+      outVar.setncatts(  ad  )  
 
-          for k in sorted(global_vars2.keys()):
-              v = global_vars2[k] 
-              if k in ['lineage','bundle']:
-                w_nc_fid.variables['knmi_provenance'].setncattr(  k+"2" , v )
-              else:
-                #w_nc_fid.setncattr(  k+"2" , v )
- 
-                if( k not in global_vars.keys() ):
-                  w_nc_fid.setncattr(  k+"2" , v )
-                elif( global_vars[k] != v ):
-                  w_nc_fid.setncattr(  k+"2" , v ) 
+      outVar.units = 'combined'
+      outVar.standard_name = 'combined '+layer1+' '+str(operation)+' '+layer2
+
+    else:
+      outVar = w_nc_fid.createVariable( var_name, ncvar.datatype , ncvar.dimensions )
+      
+      ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )  
+
+      outVar.setncatts(  ad  )   
 
 
-        except Exception, e:
-          raise e
-      except Exception, e:
-        raise e
 
-      nc_fid1.close()
-      nc_fid2.close()
+      ''' knmi prov not copied '''
+      if var_name != 'knmi_provenance' :
+        outVar[:] = ncvar[:]
 
-  except Exception, e:
-    raise e
+    logging.info(ad)
+        
+  createKnmiProvVar(w_nc_fid)
+
+  ''' combine global variables '''
+  global_vars  = dict((k , nc_fid1.getncattr(k) ) for k in nc_fid1.ncattrs() )
+  global_vars2 = dict((k , nc_fid2.getncattr(k) ) for k in nc_fid2.ncattrs() )
+
+  appendHistory(global_vars,"knmi combine source1:"+source_name1+" and source2:"+source_name2)  
+
+  for k in sorted(global_vars.keys()):
+      v = global_vars[k] 
+      if k in ['lineage','bundle']:
+        w_nc_fid.variables['knmi_provenance'].setncattr(  k , v )
+      else:
+        w_nc_fid.setncattr(  k , v )
+
+  for k in sorted(global_vars2.keys()):
+      v = global_vars2[k] 
+      if k in ['lineage','bundle']:
+        w_nc_fid.variables['knmi_provenance'].setncattr(  k+"2" , v )
+      else:
+        if( k not in global_vars.keys() ):
+          w_nc_fid.setncattr(  k+"2" , v )
+        elif( global_vars[k] != v ):
+          w_nc_fid.setncattr(  k+"2" , v ) 
+
+  nc_fid1.close()
+  nc_fid2.close()
 
   return w_nc_fid
 
@@ -310,98 +261,91 @@ from scipy import stats
 def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , target_name):
 
   ''' advanced normalistaion, tudo request. '''
-  try:
-      nc_fid = netCDF4.Dataset( source_name , 'r') 
-  except Exception, e:
-      raise e
+  #try:
+  nc_fid = netCDF4.Dataset( source_name , 'r') 
+  #except Exception, e:
+  #    raise e
  
-  try:
-    w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
-    
-    content = dict()
+  #try:
+  w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
+  
+  content = dict()
 
-    for var_name, dimension in nc_fid.dimensions.iteritems():
-        w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
- 
-    for var_name, ncvar in nc_fid.variables.iteritems():
-        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+  for var_name, dimension in nc_fid.dimensions.iteritems():
+    w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+
+  for var_name, ncvar in nc_fid.variables.iteritems():
+      #outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+      #ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+      #outVar.setncatts(  ad  )
       
-        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+    if var_name == layer:   
+      #try:
+      # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
+      outVar = w_nc_fid.createVariable(var_name, 'f4', ncvar.dimensions,fill_value=np.nan)  
+      ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() if not str(k).startswith("_"))
+      outVar.setncatts(  ad  )
+      #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )# does not set other value...    
+      #outVar[:] = [ np.nan if a < float(min0) else a for a in ncvar[:] ] # for array need matrix option
+      
+      # floats used
+      max1 =float(max0)
+      min1 =float(min0)
+      cen1 =float(centre0)            
+      
+      # threshold
+      # keep mid values
+      outVar[:] = stats.threshold(ncvar[:], threshmin=min1, threshmax=max1, newval=np.nan)
 
-        outVar.setncatts(  ad  )
-        
-        # astype('f4')
-        if var_name == layer:   
-          try:
-            # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
-            
-            #outVar[:] = np.clip(ncvar[:],float(min0),float(max0) )# does not set other value...    
-            #outVar[:] = [ np.nan if a < float(min0) else a for a in ncvar[:] ] # for array need matrix option
-            
-            # floats used
-            max1 =float(max0)
-            min1 =float(min0)
-            cen1 =float(centre0)            
-            
-            # threshold
-            # keep mid values
-            outVar[:] = stats.threshold(ncvar[:], threshmin=min1, threshmax=max1, newval=np.nan)
+      if max1 == cen1 :
+        b_mn =  1.0 / ( cen1 - min1 )  
+        a_mn = - min1 * b_mn
 
-            if max1 == cen1 :
-              b_mn =  1.0 / ( cen1 - min1 )  
-              a_mn = - min1 * b_mn
+        def normalise_tudo(x):
+            return b_mn * x + a_mn 
+      elif cen1 == min1:
+        b_mx = -1.0 / ( max1 - cen1 )   
+        a_mx = - max1 * b_mx
 
-              def normalise_tudo(x):
-                  return b_mn * x + a_mn 
-            elif cen1 == min1:
-              b_mx = -1.0 / ( max1 - cen1 )   
-              a_mx = - max1 * b_mx
+        def normalise_tudo(x):
+            return b_mx * x + a_mx 
+      else:    
+        b_mn =  1.0 / ( cen1 - min1 )
+        b_mx = -1.0 / ( max1 - cen1 )
 
-              def normalise_tudo(x):
-                  return b_mx * x + a_mx 
-            else:    
-              b_mn =  1.0 / ( cen1 - min1 )
-              b_mx = -1.0 / ( max1 - cen1 )
+        a_mn = - min1 * b_mn
+        a_mx = - max1 * b_mx
 
-              a_mn = - min1 * b_mn
-              a_mx = - max1 * b_mx
+        def normalise_tudo(x):
+            return b_mn * x + a_mn  if x < cen1 else b_mx * x + a_mx
+      
+      nt = np.vectorize(normalise_tudo)
 
-              def normalise_tudo(x):
-                  return b_mn * x + a_mn  if x < cen1 else b_mx * x + a_mx
-            
-            nt = np.vectorize(normalise_tudo)
+      outVar[:] = nt(outVar[:])
 
-            outVar[:] = nt(outVar[:])
+      outVar.units = 'normalised'
+      outVar.standard_name = 'normadv '+layer
+      #except Exception, e:
+      #  raise e   
+    else:
+      outVar = w_nc_fid.createVariable(var_name, ncvar.dtype , ncvar.dimensions,fill_value=np.nan)  
+      ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+      outVar.setncatts(  ad  )
+      
+      if var_name != 'knmi_provenance': 
+        outVar[:] = ncvar[:]
 
-          except Exception, e:
-            raise e   
-        elif var_name != 'knmi_provenance': 
-            try:
-                outVar[:] = ncvar[:]
-            except Exception as e:
-                outVar = ncvar
-            pass
-        
-    createKnmiProvVar(w_nc_fid)
+  createKnmiProvVar(w_nc_fid)
 
-    global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
-    
+  global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+  
+  appendHistory(global_vars,"knmi normalise by threshold min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name) 
+   
+  for k in sorted(global_vars.keys()):
+      v = global_vars[k] 
+      w_nc_fid.setncattr(  k , v )
 
-    #istStr = "knmi normalise by threshold min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name
-    # try:
-    #   global_vars['history'] = global_vars['history']+"\n"+histStr
-    # except Exception, e:
-    #   global_vars['history'] = histStr
-    appendHistory(global_vars,"knmi normalise by threshold min: "+min0+"max: "+max0+"centre: "+centre0+" to "+source_name) 
-     
-    for k in sorted(global_vars.keys()):
-        v = global_vars[k] 
-        w_nc_fid.setncattr(  k , v )
-
-    nc_fid.close()
-
-  except Exception, e:
-    raise e
+  nc_fid.close()
 
   return w_nc_fid
 
@@ -409,67 +353,65 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
 def normaliseLinearNetCDF( source_name , b0 , a0 , layer , target_name):
 
   ''' linear normalistaion, tudo request. '''
-  try:
-      nc_fid = netCDF4.Dataset( source_name , 'r') 
-  except Exception, e:
-      raise e
- 
-  try:
-    w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
-    
-    content = dict()
+  nc_fid = netCDF4.Dataset( source_name , 'r') 
 
-    for var_name, dimension in nc_fid.dimensions.iteritems():
-        w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
- 
-    for var_name, ncvar in nc_fid.variables.iteritems():
-        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
-      
-        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+  #try:
+  w_nc_fid = netCDF4.Dataset(target_name, 'w', format='NETCDF4')
+  
+  content = dict()
 
+  for var_name, dimension in nc_fid.dimensions.iteritems():
+      w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
+
+  for var_name, ncvar in nc_fid.variables.iteritems():
+      # outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)    
+      # ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+      # outVar.setncatts(  ad  )
+      logging.info(var_name)
+      # astype('f4')
+      if var_name == layer:  
+        outVar = w_nc_fid.createVariable(var_name, 'f4' , ncvar.dimensions, fill_value=np.nan)
+        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() if not str(k).startswith('_'))
         outVar.setncatts(  ad  )
+          
+        a1 =float(a0)
+        b1 =float(b0)           
         
-        # astype('f4')
-        if var_name == layer:   
-          try:
-            # for all values of ncvar, NaN < min, NaN > max ncvar/float(weight)
-
-            # floats used
-            
-            a1 =float(a0)
-            b1 =float(b0)           
-            
-            def normalise_tudo(x):
-                return b1 * float(x) + a1 
-            
-            nt = np.vectorize(normalise_tudo)
-
-            outVar[:] = nt(ncvar[:])
-            
-          except Exception, e:
-            raise e   
-        elif var_name != 'knmi_provenance': 
-            try:
-                outVar[:] = ncvar[:]
-            except Exception as e:
-                outVar = ncvar
-            pass
+        def normalise_tudo(x):
+            return b1 * float(x) + a1 
         
-    createKnmiProvVar(w_nc_fid)
+        nt = np.vectorize(normalise_tudo)
 
-    global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+        outVar[:] = nt(ncvar[:])
+          
+        outVar.units = 'normalised'
+        outVar.standard_name = 'norm linear '+layer
+
+        # except Exception, e:
+        #   raise e   
+      else:
+        outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
+        ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
+        outVar.setncatts(  ad  )
     
+        if var_name != 'knmi_provenance': 
+          outVar[:] = ncvar[:]
 
-    appendHistory(global_vars,"knmi normalise linear, a: "+a0+" b: "+b0+" from "+source_name) 
-     
-    for k in sorted(global_vars.keys()):
-        v = global_vars[k] 
-        w_nc_fid.setncattr(  k , v )
+  createKnmiProvVar(w_nc_fid)
 
-    nc_fid.close()
+  global_vars = dict((k , nc_fid.getncattr(k) ) for k in nc_fid.ncattrs() )
+  
+ 
+  appendHistory(global_vars,"knmi normalise linear, a: "+a0+" b: "+b0+" from "+source_name) 
+   
+  for k in sorted(global_vars.keys()):
+      v = global_vars[k] 
+      w_nc_fid.setncattr(  k , v )
 
-  except Exception, e:
-    raise e
+  nc_fid.close()
+
+  # except Exception, e:
+  #   raise e
 
   return w_nc_fid
 
@@ -545,7 +487,8 @@ def getWCS(   wcs_url1,
                     ('FORMAT'  , 'netcdf') ,
                     ('BBOX'    , bbox ),
                     ('WIDTH' , width ),
-                    ('HEIGHT', height ) 
+                    ('HEIGHT', height ),
+                    ('DIM_MEMBER','median') #????
                 ]
 
       if time is not None:

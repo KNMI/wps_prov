@@ -56,8 +56,8 @@ def generateContent(netcdf_w):
                 # content1["variable_"+str(k)+"_ndim"]  = str(v.ndim)
 
     except Exception, e:
-        logging.debug(str(e))       
- 
+        logging.error(str(e))       
+
     return content1 
 
 
@@ -75,24 +75,21 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
 
         logging.error(inputs) 
 
-        variables = ["title",
+        variables = [   "title",
                         "summary",
-                        "description",
+                        "tracking_id",
                         "keywords",
-                        "driving_experiment",
-                        "comment",
+                        "experiment",
                         "institute_id",
-                        "in_var_institution",
-                        "contact",
                         "contact_mail",
-                        "creation_date",
+                        "date_creat",
                         "time_coverage_start",
                         "time_coverage_end",
                         "geospatial_lat_min",
                         "geospatial_lat_max",
                         "geospatial_lon_min",
                         "geospatial_lon_max",
-                        "resolution"]
+                        "geospatial_lat_resolution"]
 
         (metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
 
@@ -114,7 +111,7 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_clipc_validator"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "CLIPC Validator" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC netcdf metadata validator. Checks netCDF global ncattributes for relevant metadata fields." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["abstract"] = "KNMI WPS Process: CLIPC netcdf metadata validator. Checks netCDF global nc attributes for relevant metadata fields. The result is printed locally. This function is deprecated by the DRS tool."
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -163,7 +160,9 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
         #(metaTestAnswer,content1) = processlib.testMetadata( variables , [inputs['netcdf'].getValue()] )
         try:
             netcdf_w = processlib.copyNetCDF(    inputs['netcdf_source'].getValue() ,
-                                                 fileOutPath+inputs['netcdf_target'].getValue() )
+                                                 fileOutPath+inputs['netcdf_target'].getValue() 
+
+                                                 )
 
             #content of prov... move...
             # for k in netcdf_w.ncattrs():
@@ -177,8 +176,8 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
             content1 = {"copy_error": str(e) } 
             logging.error (netcdf_w)
             logging.error (content1)
-
             raise e
+
         callback(80)
 
         return content1 , source1, netcdf_w
@@ -191,7 +190,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_copy"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "Copy netcdf" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: Simple Copy" #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["abstract"] = "KNMI WPS Process: Simple Copy. The process allows for a direct copy of a local netcdf or of an OpenDAP enabled netcdf link. The copy is available in the local scratch directory and can be uploaded in the basket for use with other WPS services." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -258,9 +257,8 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            logging.error (netcdf_w)
             logging.error (content1)
-
+            logging.error (netcdf_w)
             raise e
 
         #prov.content.append(content1)
@@ -275,7 +273,7 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_weight"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "Copy with weight netcdf" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC weight." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["abstract"] = "KNMI WPS Process: CLIPC weight. This is an advanced copy function, the output is a netcdf with a floating point variable of the dataset selected. The data can be multiplied by a constant, represented by the weight field. Further more a normalisation can be applied, three normalisation methods are provided. These are no normalisation, min max linear normalisation and std deviation normalisation."
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -288,7 +286,9 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source" , 
                             "title"      : "Copy input: Input netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                           
+#                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/tudo/tier3/forest_arcgis-10-4-0_IRPUD_JRC-LUISA-Landuse_10yr_20100101-20501231.nc",
                             "abstract"   : "application/netcdf",
                             "values"     : None
                             } ,
@@ -303,7 +303,8 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "variable" , 
                             "title"      : "Copy input: VariableName of netCDF layer." ,
                             "type"       : type("String"),
-                            "default"    : "vDTR" ,
+#                            "default"    : "vDTR" ,
+                            "default"    : "forest" ,
                             "values"     : None
                             } ,
                             { 
@@ -385,10 +386,6 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
 
             processlib.createKnmiProvVar(netcdf_w)
 
-            # for k in netcdf_w.ncattrs():
-            #   v = netcdf_w.getncattr(k)
-            #   if k not in ["bundle","lineage","bundle2","lineage2"]:
-            #     content1[str(k).replace(".","_")] = str(v) 
             content1 = generateContent(netcdf_w)
                  
         except Exception, e:
@@ -407,8 +404,8 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
         self.inputsTuple = []
 
         self.structure["identifier"] = "knmi_wcs"   # = 'wps_simple_indice', # only mandatary attribute = same file name
-        self.structure["title"]= "WCS service within wps" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: WCS Wrapper." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["title"]= "WCS Process" # = 'SimpleIndices',
+        self.structure["abstract"] = "KNMI WPS Process: WCS Wrapper.  A WCS service is used to extract a smaller subset of the opendap netcdf source. The 2D subset is defined by a bounding box, single time element and a height/width resolution of the data. The WCS service is also able to extract the median of a ensemble data set for simple visualisation."
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -428,7 +425,8 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source" , 
                             "title"      : "Copy input: Input netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            #"default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/knmi/RCM/EUR-44/BC/tasmin/tr_icclim-4-2-3_KNMI_ens-multiModel_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-44_SMHI-DBS43_EOBS10_bcref-1981-2010_yr_20060101-20991231.nc",
                             # "default"    : "COPY1.nc",
                             #"default"    : "COPY2.nc",
                             "abstract"   : "application/netcdf",
@@ -446,7 +444,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "time" , 
                             "title"      : "Copy input: Time of WCS slice." ,
                             "type"       : type("String"),
-                            "default"    : "2010-09-16T00:00:00Z" ,
+                            "default"    : "2006-07-01T00:00:00Z" ,
                             "values"     : None
                             } ,
                             { 
@@ -537,14 +535,12 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
 
         except Exception, e:
             content1 = {"copy_error": str(e) } 
-            logging.debug(netcdf_w)
             logging.error (content1)
 
             raise e
 
         callback(99)    
         
-        #prov.content.append(content1)
         return content1 , source1, netcdf_w
 
 
@@ -554,8 +550,8 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
         self.inputsTuple = []
 
         self.structure["identifier"] = "knmi_combine"   # = 'wps_simple_indice', # only mandatary attribute = same file name
-        self.structure["title"]= "Combine two inputs into a single netCDF." # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC Combine." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["title"]= "CLIPC Combine" # = 'SimpleIndices',
+        self.structure["abstract"] ="KNMI WPS Process: Simple combination of two inputs into a single netCDF. The simple combine requires to equally sized data sets for simple comparison. Currently available functions are "+str(op.keys())
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -815,8 +811,8 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
         self.inputsTuple = []
 
         self.structure["identifier"] = "knmi_advanced_combine"   # = 'wps_simple_indice', # only mandatary attribute = same file name
-        self.structure["title"]= "CLIPC Combine two normalised inputs into a single netCDF." # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC Advanced Combine." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["title"]= "CLIPC Advanced Combine"  # = 'SimpleIndices',
+        self.structure["abstract"] = "KNMI WPS Process: CLIPC Advanced combine two inputs into a single netCDF. The combine function provides a visual exploration tool for dataset pairs. Any two datasets can be resized via wcs to a single time instance and compared using numpy arithmetic and normalisation tools. The two datasets being compared are normalised and can be weighted to provide improved visual comparison.  The combine function is primarily an exploration tool, with a high level of uncertainty."
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -992,7 +988,7 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_norm_adv"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "Normalise with min, max and centre netcdf" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC Normalise Advanced." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["abstract"] = 'KNMI WPS Process: CLIPC Normalise Advanced. The normalisation method allows for linear normalisation based on a central value with boundaries.  The central value will represent a midpoint, and the maximum of the dataset. The output boundaries are the min and max values.  All other values are not given a value (NaN).' 
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -1103,7 +1099,7 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_norm_linear"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "Normalise using a linear equation" # = 'SimpleIndices',
-        self.structure["abstract"] = "KNMI WPS Process: CLIPC Normalise Linear." #'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.'
+        self.structure["abstract"] = 'KNMI WPS Process: CLIPC Normalise Linear. The dataset is transformed using a linear equation. The offset is represented by the a variables, and the rate is the b variable. It is an exploratory tool for visualising impact indicators, leading to a high level of uncertainty.'
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
