@@ -90,7 +90,12 @@ def copyNetCDF( source_name , target_name):
 
           outVar.setncatts(  ad  )
 
-          outVar[:] = ncvar[:]
+          #outVar[:] = ncvar[:]
+          try:
+            outVar[:] = ncvar[:] 
+          except:
+            outVar = ncvar 
+            pass
 
       createKnmiProvVar(w_nc_fid)
 
@@ -153,8 +158,13 @@ def weightNetCDF( source_name , weight , layer , target_name):
       ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
       outVar.setncatts(  ad  ) 
       
-      if var_name != 'knmi_provenance': 
-        outVar[:] = ncvar[:] 
+      if var_name != 'knmi_provenance':
+        try:
+          outVar[:] = ncvar[:] 
+        except:
+          outVar = ncvar 
+          pass
+          
               
   createKnmiProvVar(w_nc_fid)
 
@@ -221,9 +231,15 @@ def combineNetCDF( source_name1 , layer1 , source_name2 , layer2 , target_name, 
 
 
       ''' knmi prov not copied '''
-      if var_name != 'knmi_provenance' :
-        outVar[:] = ncvar[:]
-
+      #if var_name != 'knmi_provenance' :
+        #outVar[:] = ncvar[:]
+      if var_name != 'knmi_provenance':
+            try:
+              outVar[:] = ncvar[:] 
+            except:
+              outVar = ncvar 
+              pass
+            
     logging.info(ad)
         
   createKnmiProvVar(w_nc_fid)
@@ -332,8 +348,15 @@ def normaliseAdvancedNetCDF( source_name , min0 , max0 , centre0 , layer , targe
       ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
       outVar.setncatts(  ad  )
       
-      if var_name != 'knmi_provenance': 
-        outVar[:] = ncvar[:]
+      #if var_name != 'knmi_provenance': 
+        #outVar[:] = ncvar[:]
+        
+      if var_name != 'knmi_provenance':
+        try:
+          outVar[:] = ncvar[:] 
+        except:
+          outVar = ncvar 
+          pass
 
   createKnmiProvVar(w_nc_fid)
 
@@ -394,8 +417,15 @@ def normaliseLinearNetCDF( source_name , b0 , a0 , layer , target_name):
         ad = dict((k , ncvar.getncattr(k) ) for k in ncvar.ncattrs() )
         outVar.setncatts(  ad  )
     
-        if var_name != 'knmi_provenance': 
-          outVar[:] = ncvar[:]
+        #if var_name != 'knmi_provenance': 
+          #outVar[:] = ncvar[:]
+
+        if var_name != 'knmi_provenance':
+          try:
+            outVar[:] = ncvar[:] 
+          except:
+            outVar = ncvar 
+            pass
 
   createKnmiProvVar(w_nc_fid)
 

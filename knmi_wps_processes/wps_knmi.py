@@ -219,38 +219,38 @@ class KnmiWpsProcess(WPSProcess):
         self.callback("Start wps.", 3)
 
         ''' run: process_execute_function, defined in descriptor '''
-        try:
-            self.callback("Start wps.", 4)
-            
-            for k in self.inputs.keys():
-                self.callback(str(k)+": "+str( self.inputs[k].getValue()), 4)
-            
-            
-            logging.debug("Something has been debugged")
+        #try:
+        self.callback("Start wps.", 4)
+        
+        for k in self.inputs.keys():
+            self.callback(str(k)+": "+str( self.inputs[k].getValue()), 4)
+        
+        
+        logging.debug("Something has been debugged")
 
+        
+        self.callback(str(self.fileOutPath1), 4)
+        
+        ''' PROCESS OUTPUTs '''
+        content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
+
+        self.netcdf_w = fileO
+
+        size = 0
+        
+        if fileO is not None:
+            self.callback("Finished wps."+str(fileO), 70)
+            # try:
+            #     size = os.stat(fileO.filepath()).st_size
+            # except Exception, e:
+            #     content(71,info=str(e))
             
-            self.callback(str(self.fileOutPath1), 4)
-            
-            ''' PROCESS OUTPUTs '''
-            content, source , fileO = self.processExecuteCallback( self.inputs , callback , self.fileOutPath1 )
 
-            self.netcdf_w = fileO
+    #except Exception, e:
+            #prov.errors(str(e))
 
-            size = 0
-            
-            if fileO is not None:
-                self.callback("Finished wps."+str(fileO), 70)
-                # try:
-                #     size = os.stat(fileO.filepath()).st_size
-                # except Exception, e:
-                #     content(71,info=str(e))
-               
-
-        except Exception, e:
-            prov.errors(str(e))
-
-            traceback.print_exc(file=sys.stderr)
-            raise e
+            #traceback.print_exc(file=sys.stderr)
+            #raise e
 
         callback(80)
 

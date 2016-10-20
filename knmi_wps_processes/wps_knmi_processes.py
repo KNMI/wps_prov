@@ -173,7 +173,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
 
         except Exception, e:
             callback(70)
-            content1 = {"copy_error": str(e) } 
+            content1 = {"copy_error 176": str(e) } 
             logging.error (netcdf_w)
             logging.error (content1)
             raise e
@@ -247,19 +247,19 @@ class KnmiWeightCopyDescriptor( KnmiWebProcessDescriptor ):
 
         callback(20)
 
-        try:            
-            netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
-                                                inputs['weight'].getValue()            ,
-                                                inputs['variable'].getValue()          ,
-                                                fileOutPath+inputs['netcdf_target'].getValue() )   
+        #try:            
+        netcdf_w = processlib.weightNetCDF( inputs['netcdf_source'].getValue()     ,
+                                            inputs['weight'].getValue()            ,
+                                            inputs['variable'].getValue()          ,
+                                            fileOutPath+inputs['netcdf_target'].getValue() )   
 
-            content1 = generateContent(netcdf_w)    
+        content1 = generateContent(netcdf_w)    
 
-        except Exception, e:
-            content1 = {"copy_error": str(e) } 
-            logging.error (content1)
-            logging.error (netcdf_w)
-            raise e
+        #except Exception, e:
+            #content1 = {"copy_error 259": str(e) } 
+            #logging.error (content1)
+            #logging.error (netcdf_w)
+            #raise e
 
         #prov.content.append(content1)
         return content1 , source1, netcdf_w
@@ -389,7 +389,7 @@ class KnmiWcsDescriptor( KnmiWebProcessDescriptor ):
             content1 = generateContent(netcdf_w)
                  
         except Exception, e:
-            content1 = {"copy_error": str(e) } 
+            content1 = {"copy_error 392": str(e) } 
             logging.info (netcdf_w)
             logging.info (content1)
             raise
@@ -534,7 +534,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
             content1 = generateContent(netcdf_w)
 
         except Exception, e:
-            content1 = {"copy_error": str(e) } 
+            content1 = {"copy_error 537": str(e) } 
             logging.error (content1)
 
             raise e
@@ -690,92 +690,92 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
 
         ''' NORMALISE '''
    
-        try:
-            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
-            knmiprocess.bundle = self.process.bundle
-            # use parent path...
-            knmiprocess.fileOutPath1 = fileOutPath
+        #try:
+        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+        knmiprocess.bundle = self.process.bundle
+        # use parent path...
+        knmiprocess.fileOutPath1 = fileOutPath
 
-            knmiprocess.inputs['netcdf_source'].setValue(   {'value' : knmiprocess.fileOutPath1+'COPY_WCS1.nc' })
-            knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_NORM1.nc'} )
-            knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm1'].getValue() } )
-            knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable1'].getValue() } )
-            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
+        knmiprocess.inputs['netcdf_source'].setValue(   {'value' : knmiprocess.fileOutPath1+'COPY_WCS1.nc' })
+        knmiprocess.inputs['netcdf_target'].setValue(   {'value' : 'COPY_NORM1.nc'} )
+        knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm1'].getValue() } )
+        knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable1'].getValue() } )
+        knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
-            knmiprocess.status = self.process.status
-            knmiprocess.execute()
-            
-            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
-            knmiprocess.bundle = self.process.bundle
-            # use parent path...
-            knmiprocess.fileOutPath1 = fileOutPath
+        knmiprocess.status = self.process.status
+        knmiprocess.execute()
+        
+        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+        knmiprocess.bundle = self.process.bundle
+        # use parent path...
+        knmiprocess.fileOutPath1 = fileOutPath
 
-            knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_NORM1.nc'})
-            knmiprocess.inputs['netcdf_target'].setValue(   {'value': 'COPY_WEIGHT1.nc'} )
-            knmiprocess.inputs['weight'].setValue(          {'value': inputs['weight1'].getValue() } )
-            knmiprocess.inputs['variable'].setValue(        {'value': inputs['variable1'].getValue()} )
-            knmiprocess.inputs['tags'].setValue(            {'value': inputs['tags'].getValue() } )
+        knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_NORM1.nc'})
+        knmiprocess.inputs['netcdf_target'].setValue(   {'value': 'COPY_WEIGHT1.nc'} )
+        knmiprocess.inputs['weight'].setValue(          {'value': inputs['weight1'].getValue() } )
+        knmiprocess.inputs['variable'].setValue(        {'value': inputs['variable1'].getValue()} )
+        knmiprocess.inputs['tags'].setValue(            {'value': inputs['tags'].getValue() } )
 
-            knmiprocess.status = self.process.status
-            knmiprocess.execute()
+        knmiprocess.status = self.process.status
+        knmiprocess.execute()
 
-            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
-            knmiprocess.bundle = self.process.bundle
-            # use parent path...
-            knmiprocess.fileOutPath1 = fileOutPath
-            
-            knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_WCS2.nc'})
-            knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_NORM2.nc'} )
-            knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm2'].getValue() } )
-            knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable2'].getValue() } )
-            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
+        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+        knmiprocess.bundle = self.process.bundle
+        # use parent path...
+        knmiprocess.fileOutPath1 = fileOutPath
+        
+        knmiprocess.inputs['netcdf_source'].setValue(   {'value': knmiprocess.fileOutPath1+'COPY_WCS2.nc'})
+        knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_NORM2.nc'} )
+        knmiprocess.inputs['weight'].setValue(          {'value' : inputs['norm2'].getValue() } )
+        knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable2'].getValue() } )
+        knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
-            knmiprocess.status = self.process.status
-            knmiprocess.execute()
-            
-            knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
-            knmiprocess.bundle = self.process.bundle
-            # use parent path...
-            knmiprocess.fileOutPath1 = fileOutPath
+        knmiprocess.status = self.process.status
+        knmiprocess.execute()
+        
+        knmiprocess =  wps_knmi.KnmiWpsProcess(KnmiWeightCopyDescriptor())
+        knmiprocess.bundle = self.process.bundle
+        # use parent path...
+        knmiprocess.fileOutPath1 = fileOutPath
 
-            knmiprocess.inputs['netcdf_source'].setValue(   {'value':knmiprocess.fileOutPath1+'COPY_NORM2.nc'})
-            knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_WEIGHT2.nc'} )
-            knmiprocess.inputs['weight'].setValue(          {'value' : inputs['weight2'].getValue() } )
-            knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable2'].getValue() } )
-            knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
+        knmiprocess.inputs['netcdf_source'].setValue(   {'value':knmiprocess.fileOutPath1+'COPY_NORM2.nc'})
+        knmiprocess.inputs['netcdf_target'].setValue(   {'value':'COPY_WEIGHT2.nc'} )
+        knmiprocess.inputs['weight'].setValue(          {'value' : inputs['weight2'].getValue() } )
+        knmiprocess.inputs['variable'].setValue(        {'value' : inputs['variable2'].getValue() } )
+        knmiprocess.inputs['tags'].setValue(            {'value' : inputs['tags'].getValue() } )
 
-            knmiprocess.status = self.process.status
-            knmiprocess.execute()
+        knmiprocess.status = self.process.status
+        knmiprocess.execute()
 
-            callback(30)
+        callback(30)
 
-            ''' COMBINE '''
-            knmiprocess = wps_knmi.KnmiWpsProcess(KnmiCombineDescriptor())
-            knmiprocess.bundle = self.process.bundle
-            # use parent path...
-            knmiprocess.fileOutPath1 = fileOutPath
+        ''' COMBINE '''
+        knmiprocess = wps_knmi.KnmiWpsProcess(KnmiCombineDescriptor())
+        knmiprocess.bundle = self.process.bundle
+        # use parent path...
+        knmiprocess.fileOutPath1 = fileOutPath
 
-            knmiprocess.inputs['netcdf_source1'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_WEIGHT1.nc'})
-            knmiprocess.inputs['netcdf_source2'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_WEIGHT2.nc'})
+        knmiprocess.inputs['netcdf_source1'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_WEIGHT1.nc'})
+        knmiprocess.inputs['netcdf_source2'].setValue( {'value':knmiprocess.fileOutPath1+'COPY_WEIGHT2.nc'})
 
-            knmiprocess.inputs['variable1'].setValue( {'value' : inputs['variable1'].getValue() } )
-            knmiprocess.inputs['variable2'].setValue( {'value' : inputs['variable2'].getValue() } )
+        knmiprocess.inputs['variable1'].setValue( {'value' : inputs['variable1'].getValue() } )
+        knmiprocess.inputs['variable2'].setValue( {'value' : inputs['variable2'].getValue() } )
 
-            knmiprocess.inputs['netcdf_target'].setValue( {'value': inputs['netcdf_target'].getValue()})
+        knmiprocess.inputs['netcdf_target'].setValue( {'value': inputs['netcdf_target'].getValue()})
 
-            # output # issue...
-            #self.process.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
+        # output # issue...
+        #self.process.inputs['netcdf_target'].setValue( {'value': 'COPY_COMBINE_YEAR.nc'})
 
-            knmiprocess.inputs['operation'].setValue( {'value' : inputs['operation'].getValue() } )
-            knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
-            
-            knmiprocess.status = self.process.status
-            knmiprocess.execute()
+        knmiprocess.inputs['operation'].setValue( {'value' : inputs['operation'].getValue() } )
+        knmiprocess.inputs['tags'].setValue( {'value' : inputs['tags'].getValue() } )
+        
+        knmiprocess.status = self.process.status
+        knmiprocess.execute()
 
 
-        except Exception, e:
-            traceback.print_exc(file=sys.stderr)
-            raise e
+        #except Exception, e:
+            #traceback.print_exc(file=sys.stderr)
+            #raise e
 
         callback(48)    
         
@@ -793,7 +793,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
             content1 = generateContent(netcdf_w)    
 
         except Exception, e:
-            content1 = {"copy_error": str(e) } 
+            content1 = {"copy_error 796": str(e) } 
 
             traceback.print_exc(file='/tmp/wpsserver.log') #sys.stderr)
 
@@ -971,7 +971,7 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
             content1 = generateContent(netcdf_w)      
 
         except Exception, e:
-            content1 = {"copy_error": str(e) } 
+            content1 = {"copy_error 974": str(e) } 
             logging.error (netcdf_w)
             logging.error (content1)
 
@@ -1056,12 +1056,12 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
 
 
 class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
-
+    logging.debug ("KnmiNormaliseLinearDescriptor class");
     # KnmiNormaliseAdvancedDescriptor
 
     # override with validation process
     def process_execute_function(self , inputs, callback,fileOutPath):
-        
+        logging.debug ("KnmiNormaliseLinearDescriptor process_execute_function");
 
         callback(10)
 
@@ -1082,18 +1082,18 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
             content1 = generateContent(netcdf_w)      
 
         except Exception, e:
-            content1 = {"copy_error": str(e) } 
+            content1 = {"copy_error 1085": str(e) } 
             logging.error (netcdf_w)
             logging.error (content1)
 
             raise e
-
+        logging.debug ("KnmiNormaliseLinearDescriptor process_execute_function done");
         return content1 , source1, netcdf_w
 
 
 
     def __init__( self ):
-
+        logging.debug ("KnmiNormaliseLinearDescriptor init");
         self.structure = {}      
         self.inputsTuple = []
 
@@ -1155,9 +1155,9 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
                             }                   
                           ]
 
-
+    
         self.processExecuteCallback = self.process_execute_function
-
+        logging.debug ("KnmiNormaliseLinearDescriptor init done");
         print self
 
 
@@ -1263,7 +1263,7 @@ class CorrelatefieldDescriptor( KnmiWebProcessDescriptor ):
             content1 = generateContent(netcdf_w)    
 
         except Exception, e:
-            content1 = {"copy_error": str(e) , "target":target , "process" : process} 
+            content1 = {"copy_error 1264": str(e) , "target":target , "process" : process} 
             logging.info(netcdf_w)
             logging.info(content1)
             logging.info(str(e))
