@@ -1072,11 +1072,11 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
         source1 = [inputs['netcdf_source'].getValue()]
 
         try:
-            netcdf_w = processlib.normaliseLinearNetCDF( inputs['netcdf_source'].getValue()     ,
-                                                inputs['b'].getValue()            ,
-                                                inputs['a'].getValue()            ,
-                                                inputs['variable'].getValue()     ,
-                                                fileOutPath+inputs['netcdf_target'].getValue() )   
+            netcdf_w = processlib.normaliseLinearNetCDF(    inputs['netcdf_source'].getValue()     ,
+                                                            inputs['b'].getValue()            ,
+                                                            inputs['a'].getValue()            ,
+                                                            inputs['variable'].getValue()     ,
+                                                            fileOutPath+inputs['netcdf_target'].getValue() )   
 
 
             content1 = generateContent(netcdf_w)      
@@ -1105,6 +1105,8 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
         self.structure["statusSupported"] = True
         self.structure["grassLocation"] = False
         self.structure["metadata"] = "METADATA D4P"
+
+        logging.info(str(self.structure))
 
         # input tuple describes addLiteralInput, values
         self.inputsTuple = [
