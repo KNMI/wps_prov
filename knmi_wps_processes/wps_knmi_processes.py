@@ -124,7 +124,7 @@ class KnmiClipcValidationDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf" , 
                             "title"      : "Validator input: netCDF opendap link." ,
                             "type"       : "String",
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"
                             }  
@@ -203,7 +203,7 @@ class KnmiCopyDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source" , 
                             "title"      : "Copy input: Input netCDF." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/CWD/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/CWD_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/CWD/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/CWD_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"                            
                             } ,
@@ -564,7 +564,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source1" , 
                             "title"      : "Combine input: Source 1 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_JAN_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"
                             } ,
@@ -579,7 +579,7 @@ class KnmiCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source2" , 
                             "title"      : "Combine input: Source 2 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             # "default"    : "COPY1.nc",
                             #"default"    : "COPY2.nc",
                             "values"     : None, 
@@ -825,7 +825,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source1" , 
                             "title"      : "Combine input: Source 1 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"
                             } ,
@@ -854,7 +854,7 @@ class KnmiAdvancedCombineDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source2" , 
                             "title"      : "Combine input: Source 2 netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_JAN_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "values"     : None, 
                             "abstract"   :"application/netcdf"
                             } ,
@@ -1001,7 +1001,7 @@ class KnmiNormaliseAdvancedDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source" , 
                             "title"      : "Copy input: Input netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "abstract"   : "application/netcdf",
                             "values"     : None
                             } ,
@@ -1099,7 +1099,7 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
 
         self.structure["identifier"] = "knmi_norm_linear"   # = 'wps_simple_indice', # only mandatary attribute = same file name
         self.structure["title"]= "Normalise using a linear equation" # = 'SimpleIndices',
-        self.structure["abstract"] = 'KNMI WPS Process: CLIPC Normalise Linear. The dataset is transformed using a linear equation. The offset is represented by the a variables, and the rate is the b variable. It is an exploratory tool for visualising impact indicators, leading to a high level of uncertainty.'
+        self.structure["abstract"] = "KNMI WPS Process: CLIPC Normalise Linear. The dataset is transformed using a linear equation. The offset is represented by the a variables, and the rate is the b variable. It is an exploratory tool for visualising impact indicators, leading to a high level of uncertainty."
         self.structure["version"] = "1.0.0"
         self.structure["storeSupported"] = True
         self.structure["statusSupported"] = True
@@ -1112,7 +1112,7 @@ class KnmiNormaliseLinearDescriptor( KnmiWebProcessDescriptor ):
                             "identifier" : "netcdf_source" , 
                             "title"      : "norm input: Input netCDF opendap." ,
                             "type"       : type("String"),
-                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_SEP_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
+                            "default"    : "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc" ,
                             "abstract"   : "application/netcdf",
                             "values"     : None
                             } ,
