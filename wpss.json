@@ -1,0 +1,491 @@
+{
+    "knmi_wps": [
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.KnmiClipcValidationDescriptor object at 0x7f1353c2abd0>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "CLIPC Validator", 
+                "abstract": "KNMI WPS Process: CLIPC netcdf metadata validator. Checks netCDF global nc attributes for relevant metadata fields. The result is printed locally. This function is deprecated by the DRS tool.", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "knmi_clipc_validator", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Validator input: netCDF opendap link.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "Copy input: User Defined Tags CLIPC user tags."
+                }
+            ]
+        }, 
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.KnmiCopyDescriptor object at 0x7f1330ec8910>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "Copy netcdf", 
+                "abstract": "KNMI WPS Process: Simple Copy. The process allows for a direct copy of a local netcdf or of an OpenDAP enabled netcdf link. The copy is available in the local scratch directory and can be uploaded in the basket for use with other WPS services.", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "knmi_copy", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Copy input: Input netCDF.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/CWD/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/CWD_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source", 
+                    "type": "String"
+                }, 
+                {
+                    "minOccurs": 1, 
+                    "title": "Copy input: Output netCDF.", 
+                    "default": "COPY_OUT.nc", 
+                    "values": null, 
+                    "maxOccurs": 1, 
+                    "identifier": "netcdf_target", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "Copy input: User Defined Tags CLIPC user tags."
+                }
+            ]
+        }, 
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.KnmiWeightCopyDescriptor object at 0x7f1330ec8990>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "Copy with weight netcdf", 
+                "abstract": "KNMI WPS Process: CLIPC weight. This is an advanced copy function, the output is a netcdf with a floating point variable of the dataset selected. The data can be multiplied by a constant, represented by the weight field. Further more a normalisation can be applied, three normalisation methods are provided. These are no normalisation, min max linear normalisation and std deviation normalisation.", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "knmi_weight", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Copy input: Input netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/tudo/tier3/forest_arcgis-10-4-0_IRPUD_JRC-LUISA-Landuse_10yr_20100101-20501231.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "1.0", 
+                    "values": null, 
+                    "identifier": "weight", 
+                    "type": "String", 
+                    "title": "Copy input: Weight of netCDF input. [\"normnone\" , \"normminmax\", \"normstndrd\"]"
+                }, 
+                {
+                    "default": "forest", 
+                    "values": null, 
+                    "identifier": "variable", 
+                    "type": "String", 
+                    "title": "Copy input: VariableName of netCDF layer."
+                }, 
+                {
+                    "default": "WEIGHT.nc", 
+                    "values": null, 
+                    "identifier": "netcdf_target", 
+                    "type": "String", 
+                    "title": "Copy input: Output netCDF."
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "Copy input: User Defined Tags CLIPC user tags."
+                }
+            ]
+        }, 
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.KnmiWcsDescriptor object at 0x7f1330ec89d0>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "WCS Process", 
+                "abstract": "KNMI WPS Process: WCS Wrapper.  A WCS service is used to extract a smaller subset of the opendap netcdf source. The 2D subset is defined by a bounding box, single time element and a height/width resolution of the data. The WCS service is also able to extract the median of a ensemble data set for simple visualisation.", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "knmi_wcs", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Copy input: Input netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/knmi/RCM/EUR-44/BC/tasmin/tr_icclim-4-2-3_KNMI_ens-multiModel_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-44_SMHI-DBS43_EOBS10_bcref-1981-2010_yr_20060101-20991231.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source", 
+                    "type": "String"
+                }, 
+                {
+                    "title": "Copy input: BBOX of WCS slice.", 
+                    "default": "-40,20,60,85", 
+                    "values": null, 
+                    "maxOccurs": 4, 
+                    "identifier": "bbox", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "2006-07-01T00:00:00Z", 
+                    "values": null, 
+                    "identifier": "time", 
+                    "type": "String", 
+                    "title": "Copy input: Time of WCS slice."
+                }, 
+                {
+                    "default": "WCS.nc", 
+                    "values": null, 
+                    "identifier": "netcdf_target", 
+                    "type": "String", 
+                    "title": "Copy input: Output netCDF."
+                }, 
+                {
+                    "default": "200", 
+                    "values": null, 
+                    "identifier": "width", 
+                    "type": "String", 
+                    "title": "Copy input: width of WCS slice."
+                }, 
+                {
+                    "default": "200", 
+                    "values": null, 
+                    "identifier": "height", 
+                    "type": "String", 
+                    "title": "Copy input: height of WCS slice."
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "Copy input: User Defined Tags CLIPC user tags."
+                }
+            ]
+        }, 
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.KnmiCombineDescriptor object at 0x7f1330ec8a10>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "CLIPC Combine", 
+                "abstract": "KNMI WPS Process: Simple combination of two inputs into a single netCDF. The simple combine requires to equally sized data sets for simple comparison. Currently available functions are ['divide', 'less', 'equal', 'add', 'multiply', 'subtract', 'greater']", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "knmi_combine", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Combine input: Source 1 netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source1", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "vDTR", 
+                    "values": null, 
+                    "identifier": "variable1", 
+                    "type": "String", 
+                    "title": "Combine input: VariableName 1."
+                }, 
+                {
+                    "title": "Combine input: Source 2 netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source2", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "vDTR", 
+                    "values": null, 
+                    "identifier": "variable2", 
+                    "type": "String", 
+                    "title": "Combine input: VariableName 2."
+                }, 
+                {
+                    "default": "COMBO.nc", 
+                    "values": null, 
+                    "identifier": "netcdf_target", 
+                    "type": "String", 
+                    "title": "Combine input: Output netCDF."
+                }, 
+                {
+                    "default": "add", 
+                    "values": [
+                        "add", 
+                        "subtract", 
+                        "multiply", 
+                        "divide", 
+                        "equal", 
+                        "less", 
+                        "greater", 
+                        "nutsextraction"
+                    ], 
+                    "identifier": "operation", 
+                    "type": "String", 
+                    "title": "Combine input: Operation."
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "Combine input: User Defined Tags CLIPC user tags."
+                }
+            ]
+        }, 
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.KnmiAdvancedCombineDescriptor object at 0x7f1330ec8a50>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "CLIPC Advanced Combine", 
+                "abstract": "KNMI WPS Process: CLIPC Advanced combine two inputs into a single netCDF. The combine function provides a visual exploration tool for dataset pairs. Any two datasets can be resized via wcs to a single time instance and compared using numpy arithmetic and normalisation tools. The two datasets being compared are normalised and can be weighted to provide improved visual comparison.  The combine function is primarily an exploration tool, with a high level of uncertainty.", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "knmi_advanced_combine", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Combine input: Source 1 netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source1", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "vDTR", 
+                    "values": null, 
+                    "identifier": "variable1", 
+                    "type": "String", 
+                    "title": "Combine input: VariableName 1."
+                }, 
+                {
+                    "default": "1.0", 
+                    "values": null, 
+                    "identifier": "weight1", 
+                    "type": "String", 
+                    "title": "Combine input: Weight 1 of netCDF input."
+                }, 
+                {
+                    "default": "normminmax", 
+                    "values": [
+                        "normnone", 
+                        "normminmax", 
+                        "normstndrd"
+                    ], 
+                    "identifier": "norm1", 
+                    "type": "String", 
+                    "title": "Combine input: Norm 1 of netCDF input. [\"normnone\" , \"normminmax\", \"normstndrd\"]"
+                }, 
+                {
+                    "title": "Combine input: Source 2 netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source2", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "vDTR", 
+                    "values": null, 
+                    "identifier": "variable2", 
+                    "type": "String", 
+                    "title": "Combine input: VariableName 2."
+                }, 
+                {
+                    "default": "1.0", 
+                    "values": null, 
+                    "identifier": "weight2", 
+                    "type": "String", 
+                    "title": "Combine input: Weight 2 of netCDF input."
+                }, 
+                {
+                    "default": "normminmax", 
+                    "values": [
+                        "normnone", 
+                        "normminmax", 
+                        "normstndrd"
+                    ], 
+                    "identifier": "norm2", 
+                    "type": "String", 
+                    "title": "Combine input: Norm 2 of netCDF input. [\"normnone\" , \"normminmax\", \"normstndrd\"]"
+                }, 
+                {
+                    "default": "COMBO.nc", 
+                    "values": null, 
+                    "identifier": "netcdf_target", 
+                    "type": "String", 
+                    "title": "Combine input: Output netCDF."
+                }, 
+                {
+                    "default": "add", 
+                    "values": [
+                        "add", 
+                        "subtract", 
+                        "multiply", 
+                        "divide", 
+                        "equal", 
+                        "less", 
+                        "greater"
+                    ], 
+                    "identifier": "operation", 
+                    "type": "String", 
+                    "title": "Combine input: Operation."
+                }, 
+                {
+                    "title": "Copy input: BBOX of WCS slice.", 
+                    "default": "-40,20,60,85", 
+                    "values": null, 
+                    "maxOccurs": 4, 
+                    "identifier": "bbox", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "200", 
+                    "values": null, 
+                    "identifier": "width", 
+                    "type": "String", 
+                    "title": "Copy input: width of WCS slice."
+                }, 
+                {
+                    "default": "200", 
+                    "values": null, 
+                    "identifier": "height", 
+                    "type": "String", 
+                    "title": "Copy input: height of WCS slice."
+                }, 
+                {
+                    "default": "2010-09-16T00:00:00Z", 
+                    "values": null, 
+                    "identifier": "time1", 
+                    "type": "String", 
+                    "title": "Copy input: Time of WCS slice 1."
+                }, 
+                {
+                    "default": "2010-01-16T00:00:00Z", 
+                    "values": null, 
+                    "identifier": "time2", 
+                    "type": "String", 
+                    "title": "Copy input: Time of WCS slice 2."
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "Combine input: User Defined Tags CLIPC user tags."
+                }
+            ]
+        }, 
+        {
+            "function": "run/function", 
+            "descriptor": "<knmi_wps_processes.wps_knmi_processes.CorrelatefieldDescriptor object at 0x7f1330ec8a90>", 
+            "package": "add/package/here", 
+            "structure": {
+                "title": "climate explorer correlatefield", 
+                "abstract": "KNMI Climate Explorer: correlatefield function", 
+                "version": "1.0.0", 
+                "statusSupported": true, 
+                "storeSupported": true, 
+                "identifier": "wps_climexp_correlatefield", 
+                "grassLocation": false, 
+                "metadata": "METADATA D4P"
+            }, 
+            "inputs": [
+                {
+                    "title": "Copy input: Input 1 netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/climate_explorer/cru_ts3.22.1901.2013.pre.dat.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source1", 
+                    "type": "String"
+                }, 
+                {
+                    "title": "Copy input: Input 2 netCDF opendap.", 
+                    "default": "http://opendap.knmi.nl/knmi/thredds/dodsC/climate_explorer/nino3.nc", 
+                    "abstract": "application/netcdf", 
+                    "values": null, 
+                    "identifier": "netcdf_source2", 
+                    "type": "String"
+                }, 
+                {
+                    "default": "out.nc", 
+                    "values": null, 
+                    "identifier": "netcdf_target", 
+                    "type": "String", 
+                    "title": "Output netCDF."
+                }, 
+                {
+                    "default": "mon", 
+                    "values": null, 
+                    "identifier": "frequency", 
+                    "type": "String", 
+                    "title": "Frequency"
+                }, 
+                {
+                    "default": "1:12", 
+                    "values": null, 
+                    "identifier": "ratio", 
+                    "type": "String", 
+                    "title": "Ratio"
+                }, 
+                {
+                    "default": "ave", 
+                    "values": null, 
+                    "identifier": "average", 
+                    "type": "String", 
+                    "title": "Average"
+                }, 
+                {
+                    "default": "provenance_research_knmi", 
+                    "values": null, 
+                    "identifier": "tags", 
+                    "type": "String", 
+                    "title": "User Defined Tags CLIPC user tags."
+                }
+            ]
+        }
+    ]
+}
